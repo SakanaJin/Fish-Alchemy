@@ -12,6 +12,10 @@ class UserGetDto(BaseModel):
     id: int
     username: str
 
+class LoginDto(BaseModel):
+    username: str
+    password: str
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)

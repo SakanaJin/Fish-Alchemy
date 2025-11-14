@@ -15,11 +15,6 @@ router = APIRouter(prefix='/users', tags=["Users"])
 def create_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-@router.post("/test")
-def test_user(dto: Any = Body(...)):
-    print("entered")
-    return {"recieved": dto}
-
 @router.post("/create")
 def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)):
     print("Recieved", userdto)

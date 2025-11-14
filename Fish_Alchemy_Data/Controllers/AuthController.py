@@ -6,8 +6,7 @@ import itsdangerous
 from typing import Optional
 
 from Fish_Alchemy_Data.database import get_db
-from Fish_Alchemy_Data.Entities.User import User, UserCreateDto
-# from Fish_Alchemy_Data.Common.Response import Response
+from Fish_Alchemy_Data.Entities.User import User, LoginDto
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -31,20 +30,6 @@ def verify_session_token(token: str) -> Optional[int]:
     
 @router.get("/get-current-user")
 def get_current_user(request: Request, session_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
-    # response = Response()
-    # if not session_token:
-    #     response.AddError("auth", "Not Authenticated")
-    #     raise HTTPException(status_code=401, detail=response)
-    # user_id = verify_session_token(session_token)
-    # if not user_id:
-    #     response.AddError("auth", "Invalid or expired session")
-    #     raise HTTPException(status_code=401, detail=response)
-    # user = db.query(User).get(user_id)
-    # if not user:
-    #     response.AddError("user", "user not found")
-    #     raise HTTPException(status_code=404, detail=response)
-    # response.Data = user
-    # return response
     if not session_token:
         raise HTTPException(status_code=401, detail="Not Authenticated")
     user_id = verify_session_token(session_token)
@@ -55,23 +40,23 @@ def get_current_user(request: Request, session_token: Optional[str] = Cookie(Non
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-# @router.post("/logout")
-# def user_logout(response: Response):
-#     response.delete_cookie(COOKIE_NAME)
-#     return {"message": "Logged out"}
+@router.post("/logout")
+def user_logout(response: Response):
+    response.delete_cookie(COOKIE_NAME)
+    return {"message": "Logged out"}
 
-# @router.post("/login")
-# def user_login(response: Response, userdto: UserCreateDto, db: Session = Depends(get_db)):
-#     user = db.query(User).filter(User.username == userdto.username).first()
-#     if not user or not verify_password(userdto.password, user.password_hash):
-#         raise HTTPException(status_code=401, detail="Username or password is incorrect")
-#     token = create_session_token(user.id)
-#     response.set_cookie(
-#         key=COOKIE_NAME,
-#         value=token,
-#         httponly=True,
-#         max_age=COOKIE_MAX_AGE,
-#         samesite="lax",
-#         secure=False, # use true in prod https
-#     )
-#     return {"message": "Logged in successfully"}
+@router.post("/login")
+def user_login(response: Response, logindto: LoginDto, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == logindto.username).first()
+    if not user or not verify_password(logindto.password, user.auth.password_hash):
+        raise HTTPException(status_code=401, detail="Username or password is incorrect")
+    token = create_session_token(user.id)
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        max_age=COOKIE_MAX_AGE,
+        samesite="lax",
+        secure=False, # use true in prod https
+    )
+    return {"message": "Logged in successfully"}
