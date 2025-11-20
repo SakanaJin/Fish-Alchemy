@@ -21,7 +21,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     auth = relationship("UserAuth", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    groups = relationship("groups", secondary='user_group', back_populates='users')
 
-    def toDto(self) -> UserGetDto:
+    def toGetDto(self) -> UserGetDto:
         userdto = UserGetDto(id=self.id, username=self.username)
         return userdto

@@ -44,7 +44,7 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)):
     try:
         db.commit()
         db.refresh(user)
-        response.data = user.toDto()
+        response.data = user.toGetDto()
         return response
     except IntegrityError:
         db.rollback()
