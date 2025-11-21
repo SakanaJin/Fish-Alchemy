@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from Fish_Alchemy_Data.Controllers import UsersController, AuthController
@@ -16,6 +17,8 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(UsersController.router)
 app.include_router(AuthController.router)
+
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 app.add_middleware(
     CORSMiddleware,
