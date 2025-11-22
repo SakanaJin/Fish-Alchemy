@@ -7,6 +7,9 @@ from Fish_Alchemy_Data.database import Base, engine
 
 from Fish_Alchemy_Data.Entities.User import User
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
+from Fish_Alchemy_Data.Entities.Groups import Group
+from Fish_Alchemy_Data.Entities.UserGroup import UserGroup
+from Fish_Alchemy_Data.Entities.Project import Project
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -38,12 +38,12 @@ def get_current_user(request: Request, session_token: Optional[str] = Cookie(Non
     user = db.query(User).get(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return user.toGetDto()
 
 @router.post("/logout")
 def user_logout(response: Response):
     response.delete_cookie(COOKIE_NAME)
-    return {"message": "Logged out"}
+    return {"message": "Logged out successfully"}
 
 @router.post("/login")
 def user_login(response: Response, logindto: LoginDto, db: Session = Depends(get_db)):
