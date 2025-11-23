@@ -5,7 +5,7 @@ import bcrypt
 
 from typing import Any
 
-from Fish_Alchemy_Data.Entities.User import User, UserCreateDto, UserGetDto
+from Fish_Alchemy_Data.Entities.Users import User, UserCreateDto, UserGetDto
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
 from Fish_Alchemy_Data.Common.Response import Response
 from Fish_Alchemy_Data.database import get_db

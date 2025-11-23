@@ -15,6 +15,7 @@ class UserGetDto(BaseModel):
     pfp_path: str
     banner_path: str
     groups: list
+    tickets: list
 
 class UserShallowDto(BaseModel):
     id: int
@@ -33,10 +34,20 @@ class User(Base):
     banner_path = Column(String(255), default="/media/user/banner/P817hp4.jpg")
 
     auth = relationship("UserAuth", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
     groups = relationship("Group", secondary='user_group', back_populates='users')
 
+    tickets = relationship("Ticket", back_populates="user")
+
     def toGetDto(self) -> UserGetDto:
-        userdto = UserGetDto(id=self.id, username=self.username, pfp_path=self.pfp_path, banner_path=self.banner_path, groups=[group.toShallowDto for group in self.groups])
+        userdto = UserGetDto(
+            id=self.id,
+            username=self.username, 
+            pfp_path=self.pfp_path, 
+            banner_path=self.banner_path, 
+            groups=[group.toShallowDto for group in self.groups],
+            tickets=[ticket.toShallowDto for ticket in self.tickets]
+        )
         return userdto
     
     def toShallowDto(self) -> UserShallowDto:

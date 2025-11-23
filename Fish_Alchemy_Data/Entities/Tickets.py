@@ -1,0 +1,72 @@
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum, DateTime
+from sqlalchemy.orm import relationship
+from pydantic import BaseModel
+from datetime import datetime
+
+from Fish_Alchemy_Data.database import Base
+from Fish_Alchemy_Data.Common.TicketState import TicketState
+from Fish_Alchemy_Data.Entities.Users import UserShallowDto
+from Fish_Alchemy_Data.Entities.Projects import ProjectShallowDto
+
+class TicketGetDto(BaseModel):
+    id: int
+    name: str
+    description: str
+    ticketnum: int
+    state: TicketState
+    github_url: str
+    created_at: datetime
+    duedate: datetime
+    user: UserShallowDto
+    project: ProjectShallowDto
+    
+class TicketShallowDto(BaseModel):
+    id: int
+    name: str
+    ticketnum: int
+    state: TicketState
+    created_at: datetime
+    duedate: datetime
+
+class Ticket(Base):
+    __tablename__ = 'tickets'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    ticketnum = Column(Integer)
+    state = Column(Enum(TicketState), default=TicketState.BACKLOG, nullable=False)
+    github_url = Column(String(255))
+    created_at = Column(DateTime(timezone=True), default=datetime.now)
+    duedate = Column(DateTime(timezone=True), nullable=True)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="tickets")
+
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    project = relationship("Project", back_populates="tickets")
+
+    def toGetDto(self) -> TicketGetDto:
+        ticketdto = TicketGetDto(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            ticketnum=self.ticketnum,
+            state=self.state,
+            github_url=self.github_url,
+            created_at=self.created_at,
+            duedate=self.duedate,
+            user=self.user.toShallowDto(),
+            project=self.project.toShallowDto()
+        )
+        return ticketdto
+    
+    def toShallowDto(self) -> TicketShallowDto:
+        ticketdto = TicketShallowDto(
+            id=self.id,
+            name=self.name,
+            ticketnum=self.ticketnum,
+            state=self.state,
+            created_at=self.created_at,
+            duedate=self.duedate
+        )
+        return ticketdto

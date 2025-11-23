@@ -5,11 +5,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from Fish_Alchemy_Data.Controllers import UsersController, AuthController
 from Fish_Alchemy_Data.database import Base, engine
 
-from Fish_Alchemy_Data.Entities.User import User
+from Fish_Alchemy_Data.Entities.Users import User
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
 from Fish_Alchemy_Data.Entities.Groups import Group
-from Fish_Alchemy_Data.Entities.UserGroup import UserGroup
-from Fish_Alchemy_Data.Entities.Project import Project
+from Fish_Alchemy_Data.Entities.UserGroups import UserGroup
+from Fish_Alchemy_Data.Entities.Projects import Project
+from Fish_Alchemy_Data.Entities.Tickets import Ticket
+from Fish_Alchemy_Data.Entities.Graphs import Graph
+from Fish_Alchemy_Data.Entities.Nodes import Node
+from Fish_Alchemy_Data.Entities.NodeAssociation import NodeAssociation
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -6,7 +6,7 @@ import itsdangerous
 from typing import Optional
 
 from Fish_Alchemy_Data.database import get_db
-from Fish_Alchemy_Data.Entities.User import User, LoginDto
+from Fish_Alchemy_Data.Entities.Users import User, LoginDto
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
