@@ -21,7 +21,7 @@ class Group(Base):
     __tablename__ = "groups"
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    logo_path = Column(String(255), default="/media/group/logo/FOXHOUND_Logo.png")
+    logo_path = Column(String(255), default="/media/group/logo/default.png")
     banner_path = Column(String(255), default="/media/group/banner/default.png")
 
     users = relationship("User", secondary='user_group', back_populates='groups')

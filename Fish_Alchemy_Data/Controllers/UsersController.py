@@ -1,23 +1,28 @@
-from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import bcrypt
+import os
+import uuid
 
 from typing import Any
 
-from Fish_Alchemy_Data.Entities.Users import User, UserCreateDto, UserGetDto
+from Fish_Alchemy_Data.Entities.Users import User, UserCreateDto, UserUpdateDto, DEFAULT_PFP, DEFAULT_BANNER
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
-from Fish_Alchemy_Data.Common.Response import Response
+from Fish_Alchemy_Data.Controllers.AuthController import require_admin
+from Fish_Alchemy_Data.Common.Response import Response, HttpException
 from Fish_Alchemy_Data.database import get_db
 
-router = APIRouter(prefix='/users', tags=["Users"])
+PFP_PATH = "/media/user/pfp"
+BANNER_PATH = "/media/user/banner"
+
+router = APIRouter(prefix='/api/users', tags=["Users"])
 
 def create_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 @router.post("/create")
-def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)):
-    print("Recieved", userdto)
+def create_user(userdto: UserCreateDto, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     response = Response()
     if len(userdto.username) == 0:
         response.add_error("username", "Cannot be empty")
@@ -26,15 +31,15 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)):
     if len(userdto.password) == 0:
         response.add_error("password","Cannot be empty")
     if response.has_errors:
-        raise HTTPException(status_code=400, detail=response.model_dump())
+        raise HttpException(status_code=400, response=response)
     user = User(username=userdto.username)
     db.add(user)
     try:
         db.flush()
     except IntegrityError:
         db.rollback()
-        response.add_error("username", "Username already taken")
-        raise HTTPException(status_code=409, detail=response.model_dump())
+        response.add_error("username", "Username taken")
+        raise HttpException(status_code=409, response=response)
     auth = UserAuth(
         id = user.id,
         email = userdto.email,
@@ -49,4 +54,114 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         response.add_error("email", "Email already in use")
-        raise HTTPException(status_code=409, detail=response.model_dump())
+        raise HttpException(status_code=409, response=response)
+    
+@router.put("/{id}/username")
+def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+    if len(userdto.username) == 0:
+        response.add_error("username", "cannot be empty")
+    if response.has_errors:
+        raise HttpException(status_code=400, response=response)
+    user.username = userdto.username
+    try:
+        db.commit()
+        response.data = user.toGetDto()
+        return response
+    except IntegrityError:
+        db.rollback()
+        response.add_error("username", "username taken")
+        raise HttpException(status_code=409, response=response)
+
+@router.get("/{id}")
+def get_user_by_id(id: int, db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+        raise HttpException(status_code=404, response=response)
+    response.data = user.toGetDto()
+    return response
+
+@router.put("/{id}/pfp")
+async def update_pfp(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+    if not file.content_type.startswith("image/"):
+        response.add_error("File", "File must be an image")
+    if response.has_errors:
+        raise HttpException(status_code=400, response=response)
+    extension = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{extension}"
+    cwd = os.getcwd()
+    filepath = os.path.join(PFP_PATH, filename)
+    if user.pfp_path != DEFAULT_PFP:
+        os.remove(os.path.join(cwd, user.pfp_path[1:]))
+    with open(os.path.join(cwd, filepath[1:]), "wb") as f:
+        f.write(await file.read())
+    user.pfp_path = filepath
+    db.commit()
+    response.data = user.toGetDto()
+    return response
+
+@router.put("/{id}/banner")
+async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+    if not file.content_type.startswith("image/"):
+        response.add_error("File", "File must be an image")
+    if response.has_errors:
+        raise HttpException(status_code=400, response=response)
+    extension = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{extension}"
+    cwd = os.getcwd()
+    filepath = os.path.join(BANNER_PATH, filename)
+    if user.banner_path != DEFAULT_BANNER:
+        os.remove(os.path.join(cwd, user.banner_path[1:]))
+    with open(os.path.join(cwd, filepath[1:]), "wb") as f:
+        f.write(await file.read())
+    user.banner_path = filepath
+    db.commit()
+    response.data = user.toGetDto()
+    return response
+
+@router.delete("/{id}/pfp")
+def remove_pfp(id: int, db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+    if user.pfp_path == DEFAULT_PFP:
+        response.add_error("pfp", "no pfp")
+    if response.has_errors:
+        raise HttpException(status_code=404, response=response)
+    cwd = os.getcwd()
+    os.remove(os.path.join(cwd, user.pfp_path[1:]))
+    user.pfp_path = DEFAULT_PFP
+    db.commit()
+    response.data = user.toGetDto()
+    return response
+
+@router.delete("/{id}/banner")
+def remove_banner(id: int, db: Session = Depends(get_db)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+    if user.banner_path == DEFAULT_BANNER:
+        response.add_error("pfp", "no banner")
+    if response.has_errors:
+        raise HttpException(status_code=404, response=response)
+    cwd = os.getcwd()
+    os.remove(os.path.join(cwd, user.banner_path[1:]))
+    user.banner_path = DEFAULT_BANNER
+    db.commit()
+    response.data = user.toGetDto()
+    return response

@@ -30,7 +30,7 @@ class Project(Base):
     ticket_count = Column(Integer, default=0)
     discord_webhook_url = Column(String(255), nullable=True)
     github_url = Column(String(255), nullable=True)
-    logo_path = Column(String(255), default="/media/project/logo/star.png")
+    logo_path = Column(String(255), default="/media/project/logo/default.png")
     banner_path = Column(String(255), default="/media/project/banner/default.jpg")
 
     group_id = Column(Integer, ForeignKey("groups.id"))

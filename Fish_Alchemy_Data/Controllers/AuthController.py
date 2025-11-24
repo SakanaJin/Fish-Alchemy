@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, Request, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Response as FastRes, Request, Cookie
 from sqlalchemy.orm import Session
 from typing import Optional
 import bcrypt
@@ -7,8 +7,10 @@ from typing import Optional
 
 from Fish_Alchemy_Data.database import get_db
 from Fish_Alchemy_Data.Entities.Users import User, LoginDto
+from Fish_Alchemy_Data.Common.Response import Response, HttpException
+from Fish_Alchemy_Data.Common.Role import Role
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 SECRET_KEY = "Fish"
 serializer = itsdangerous.URLSafeTimedSerializer(SECRET_KEY)
@@ -28,30 +30,67 @@ def verify_session_token(token: str) -> Optional[int]:
     except itsdangerous.BadSignature:
         return None
     
-@router.get("/get-current-user")
-def get_current_user(request: Request, session_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+def get_current_user(session_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)) -> Optional[User]:
+    response = Response()
     if not session_token:
-        raise HTTPException(status_code=401, detail="Not Authenticated")
+        response.add_error("cookie", "not authenticated")
+        raise HttpException(status_code=401, response=response)
     user_id = verify_session_token(session_token)
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        response.add_error("cookie", "Invalid or expired token")
+        raise HttpException(status_code=401, response=response)
     user = db.query(User).get(user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user.toGetDto()
+        response.add_error("id", "user not found")
+        raise HttpException(status_code=404, response=response)
+    return user
+
+def require_admin(user: User = Depends(get_current_user)):
+    response = Response()
+    if user.auth.role != Role.ADMIN:
+        response.add_error("role", "Admin only")
+        raise HttpException(status_code=403, response=response)
+    return user
+
+@router.get("/get-current-user")
+def get_current_user(user: User = Depends(get_current_user)):
+    response = Response()
+    response.data = user.toGetDto()
+    return response
+
+# @router.get("/get-current-user")
+# def get_current_user(request: Request, session_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+#     response = Response()
+#     if not session_token:
+#         response.add_error("cookie", "not authenticated")
+#         raise HttpException(status_code=401, response=response)
+#     user_id = verify_session_token(session_token)
+#     if not user_id:
+#         response.add_error("cookie", "Invalid or expired token")
+#         raise HttpException(status_code=401, response=response)
+#     user = db.query(User).get(user_id)
+#     if not user:
+#         response.add_error("id", "user not found")
+#         raise HttpException(status_code=404, response=response)
+#     response.data = user.toGetDto()
+#     return response
 
 @router.post("/logout")
-def user_logout(response: Response):
-    response.delete_cookie(COOKIE_NAME)
-    return {"message": "Logged out successfully"}
+def user_logout(fastres: FastRes):
+    response = Response()
+    fastres.delete_cookie(COOKIE_NAME)
+    response.data={"message": "Logged out successfully"}
+    return response
 
 @router.post("/login")
-def user_login(response: Response, logindto: LoginDto, db: Session = Depends(get_db)):
+def user_login(fastres: FastRes, logindto: LoginDto, db: Session = Depends(get_db)):
+    response = Response()
     user = db.query(User).filter(User.username == logindto.username).first()
     if not user or not verify_password(logindto.password, user.auth.password_hash):
-        raise HTTPException(status_code=401, detail="Username or password is incorrect")
+        response.add_error("auth", "Username or password is incorrect")
+        raise HttpException(status_code=401, response=response)
     token = create_session_token(user.id)
-    response.set_cookie(
+    fastres.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
@@ -59,4 +98,5 @@ def user_login(response: Response, logindto: LoginDto, db: Session = Depends(get
         samesite="lax",
         secure=False, # use true in prod https
     )
-    return {"message": "Logged in successfully"}
+    response.data = {"message": "Logged in successfully"}
+    return response

@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+
 from Fish_Alchemy_Data.database import Base, engine
+
+from Fish_Alchemy_Data.Common.Response import HttpException
 
 from Fish_Alchemy_Data.Entities.Users import User
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
@@ -35,3 +39,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(HttpException)
+def HttpExceptionHandler(request: Request, exception: HttpException):
+    return JSONResponse(
+        exception.response.model_dump(),
+        status_code=exception.status_code
+    )

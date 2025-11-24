@@ -4,10 +4,16 @@ from pydantic import BaseModel
 
 from Fish_Alchemy_Data.database import Base
 
+DEFAULT_PFP = "/media/user/pfp/default.jpg"
+DEFAULT_BANNER = "/media/user/banner/default.jpg"
+
 class UserCreateDto(BaseModel):
     username: str
     email: str
     password: str
+
+class UserUpdateDto(BaseModel):
+    username: str
 
 class UserGetDto(BaseModel):
     id: int
@@ -30,8 +36,8 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
-    pfp_path = Column(String(255), default="/media/user/pfp/frog.jpg")
-    banner_path = Column(String(255), default="/media/user/banner/P817hp4.jpg")
+    pfp_path = Column(String(255), default=DEFAULT_PFP)
+    banner_path = Column(String(255), default=DEFAULT_BANNER)
 
     auth = relationship("UserAuth", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
