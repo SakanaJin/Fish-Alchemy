@@ -51,10 +51,11 @@ class User(Base):
             username=self.username, 
             pfp_path=self.pfp_path, 
             banner_path=self.banner_path, 
-            groups=[group.toShallowDto for group in self.groups],
-            tickets=[ticket.toShallowDto for ticket in self.tickets]
+            groups=[group.toShallowDto() for group in self.groups],
+            tickets=[ticket.toShallowDto() for ticket in self.tickets]
         )
         return userdto
     
     def toShallowDto(self) -> UserShallowDto:
         userdto = UserShallowDto(id=self.id, username=self.username, pfp_path=self.pfp_path)
+        return userdto

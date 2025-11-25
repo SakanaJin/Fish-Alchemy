@@ -53,7 +53,7 @@ def require_admin(user: User = Depends(get_current_user)):
     return user
 
 @router.get("/get-current-user")
-def get_current_user(user: User = Depends(get_current_user)):
+def get_current_user_endpoint(user: User = Depends(get_current_user)):
     response = Response()
     response.data = user.toGetDto()
     return response

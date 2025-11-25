@@ -4,8 +4,17 @@ from pydantic import BaseModel
 
 from Fish_Alchemy_Data.database import Base
 
+DEFAULT_LOGO = "/media/group/logo/default.png"
+DEFAULT_BANNER = "/media/group/banner/default.png"
+
+class GroupCreateDto(BaseModel):
+    name: str
+
+class GroupUpdateDto(BaseModel):
+    name: str
+
 class GroupGetDto(BaseModel):
-    id: str
+    id: int
     name: str
     logo_path: str
     banner_path: str
@@ -13,7 +22,7 @@ class GroupGetDto(BaseModel):
     projects: list
 
 class GroupShallowDto(BaseModel):
-    id: str
+    id: int
     name: str
     logo_path: str
 
@@ -34,7 +43,7 @@ class Group(Base):
             logo_path=self.logo_path, 
             banner_path=self.banner_path, 
             users=[user.toShallowDto() for user in self.users], 
-            project=[project.toShallowDto() for project in self.projects]
+            projects=[project.toShallowDto() for project in self.projects]
         )
         return groupgetdto
     

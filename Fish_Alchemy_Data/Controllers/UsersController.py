@@ -21,8 +21,8 @@ router = APIRouter(prefix='/api/users', tags=["Users"])
 def create_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-@router.post("/create")
-def create_user(userdto: UserCreateDto, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+@router.post("/")
+def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add back admin auth when finished
     response = Response()
     if len(userdto.username) == 0:
         response.add_error("username", "Cannot be empty")
@@ -75,6 +75,13 @@ def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_d
         db.rollback()
         response.add_error("username", "username taken")
         raise HttpException(status_code=409, response=response)
+
+@router.get("/")
+def get_all_users(db: Session = Depends(get_db)):
+    response = Response()
+    users = db.query(User).all()
+    response.data = [user.toGetDto() for user in users]
+    return response
 
 @router.get("/{id}")
 def get_user_by_id(id: int, db: Session = Depends(get_db)):
@@ -138,9 +145,9 @@ def remove_pfp(id: int, db: Session = Depends(get_db)):
     user = db.query(User).get(id)
     if not user:
         response.add_error("id", "user not found")
+        raise HttpException(status_code=404, response=response)
     if user.pfp_path == DEFAULT_PFP:
         response.add_error("pfp", "no pfp")
-    if response.has_errors:
         raise HttpException(status_code=404, response=response)
     cwd = os.getcwd()
     os.remove(os.path.join(cwd, user.pfp_path[1:]))
@@ -155,13 +162,25 @@ def remove_banner(id: int, db: Session = Depends(get_db)):
     user = db.query(User).get(id)
     if not user:
         response.add_error("id", "user not found")
+        raise HttpException(status_code=404, response=response)
     if user.banner_path == DEFAULT_BANNER:
         response.add_error("pfp", "no banner")
-    if response.has_errors:
         raise HttpException(status_code=404, response=response)
     cwd = os.getcwd()
     os.remove(os.path.join(cwd, user.banner_path[1:]))
     user.banner_path = DEFAULT_BANNER
     db.commit()
     response.data = user.toGetDto()
+    return response
+
+@router.delete("/{id}")
+def delete_user(id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    response = Response()
+    user = db.query(User).get(id)
+    if not user:
+        response.add_error("id", "user not found")
+        raise HttpException(status_code=404, response=response)
+    db.delete(user)
+    db.commit()
+    response.data = True
     return response
