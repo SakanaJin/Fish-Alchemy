@@ -39,7 +39,7 @@ def get_current_user(session_token: Optional[str] = Cookie(None), db: Session = 
     if not user_id:
         response.add_error("cookie", "Invalid or expired token")
         raise HttpException(status_code=401, response=response)
-    user = db.query(User).get(user_id)
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)

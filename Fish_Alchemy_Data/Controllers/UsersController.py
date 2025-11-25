@@ -59,7 +59,7 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add ba
 @router.put("/{id}/username")
 def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
     if len(userdto.username) == 0:
@@ -86,7 +86,7 @@ def get_all_users(db: Session = Depends(get_db)):
 @router.get("/{id}")
 def get_user_by_id(id: int, db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)
@@ -96,7 +96,7 @@ def get_user_by_id(id: int, db: Session = Depends(get_db)):
 @router.put("/{id}/pfp")
 async def update_pfp(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
     if not file.content_type.startswith("image/"):
@@ -119,7 +119,7 @@ async def update_pfp(id: int, file: UploadFile = File(...), db: Session = Depend
 @router.put("/{id}/banner")
 async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
     if not file.content_type.startswith("image/"):
@@ -142,7 +142,7 @@ async def update_banner(id: int, file: UploadFile = File(...), db: Session = Dep
 @router.delete("/{id}/pfp")
 def remove_pfp(id: int, db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)
@@ -159,7 +159,7 @@ def remove_pfp(id: int, db: Session = Depends(get_db)):
 @router.delete("/{id}/banner")
 def remove_banner(id: int, db: Session = Depends(get_db)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)
@@ -176,7 +176,7 @@ def remove_banner(id: int, db: Session = Depends(get_db)):
 @router.delete("/{id}")
 def delete_user(id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     response = Response()
-    user = db.query(User).get(id)
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)
