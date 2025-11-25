@@ -7,7 +7,6 @@ from Fish_Alchemy_Data.Common.Response import Response, HttpException
 
 from Fish_Alchemy_Data.Entities.Groups import Group, GroupCreateDto, GroupUpdateDto, DEFAULT_LOGO, DEFAULT_BANNER
 from Fish_Alchemy_Data.Entities.Users import User
-from Fish_Alchemy_Data.Entities.UserGroups import UserGroup
 from Fish_Alchemy_Data.Controllers.AuthController import get_current_user
 
 LOGO_PATH = "/media/group/logo"
