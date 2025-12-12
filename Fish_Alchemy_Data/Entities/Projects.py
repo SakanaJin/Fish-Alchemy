@@ -4,11 +4,28 @@ from pydantic import BaseModel
 
 from Fish_Alchemy_Data.database import Base
 from Fish_Alchemy_Data.Entities.Groups import GroupShallowDto
+from Fish_Alchemy_Data.Entities.Users import UserShallowDto
+
+DEFAULT_LOGO = '/media/project/logo/default.png'
+DEFAULT_BANNER = '/media/project/banner/default.jpg'
+
+class ProjectCreateDto(BaseModel):
+    name: str
+    description: str
+    discord_webhook_url: str
+    github_url: str
+
+class ProjectUpdateDto(BaseModel):
+    name: str
+    description: str
+    discord_webhook_url: str
+    github_url: str
 
 class ProjectGetDto(BaseModel):
     id: int
     name: str
     description: str
+    lead: UserShallowDto
     ticket_count: int
     discord_webhook_url: str
     github_url: str
@@ -40,11 +57,15 @@ class Project(Base):
 
     graphs = relationship("Graph", back_populates="project")
 
+    lead_id = Column(Integer, ForeignKey("users.id"))
+    lead = relationship("User")
+
     def toGetDto(self) -> ProjectGetDto:
         projectdto = ProjectGetDto(
             id=self.id, 
             name=self.name, 
-            description=self.description, 
+            description=self.description,
+            lead=self.lead.toShallowDto(), 
             ticket_count=self.ticket_count,
             discord_webhook_url=self.discord_webhook_url, 
             github_url=self.github_url, logo_path=self.logo_path, 

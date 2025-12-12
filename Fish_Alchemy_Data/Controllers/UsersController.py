@@ -56,7 +56,7 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add ba
         response.add_error("email", "Email already in use")
         raise HttpException(status_code=409, response=response)
     
-@router.put("/{id}/username")
+@router.patch("/{id}/username")
 def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_db)):
     response = Response()
     user = db.query(User).filter(User.id == id).first()
@@ -93,7 +93,7 @@ def get_user_by_id(id: int, db: Session = Depends(get_db)):
     response.data = user.toGetDto()
     return response
 
-@router.put("/{id}/pfp")
+@router.patch("/{id}/pfp")
 async def update_pfp(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
     user = db.query(User).filter(User.id == id).first()
@@ -116,7 +116,7 @@ async def update_pfp(id: int, file: UploadFile = File(...), db: Session = Depend
     response.data = user.toGetDto()
     return response
 
-@router.put("/{id}/banner")
+@router.patch("/{id}/banner")
 async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
     user = db.query(User).filter(User.id == id).first()

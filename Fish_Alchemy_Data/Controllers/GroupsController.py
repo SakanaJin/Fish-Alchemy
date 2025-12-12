@@ -28,7 +28,7 @@ def create_group(groupdto: GroupCreateDto, db: Session = Depends(get_db), userdt
     response.data=group.toGetDto()
     return response
 
-@router.put("/{id}/name")
+@router.patch("/{id}/name")
 def update_name(groupdto: GroupUpdateDto, id: int, db: Session = Depends(get_db)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
@@ -94,7 +94,7 @@ def get_by_id(id: int, db: Session = Depends(get_db)):
     response.data = group.toGetDto()
     return response
 
-@router.put("/{id}/logo")
+@router.patch("/{id}/logo")
 async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
@@ -117,7 +117,7 @@ async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depen
     response.data = group.toGetDto()
     return response
 
-@router.put("/{id}/banner")
+@router.patch("/{id}/banner")
 async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
