@@ -40,7 +40,7 @@ def create(projectdto: ProjectCreateDto, groupid: int, userid: int, db: Session 
     db.commit()
     response.data=project.toGetDto()
     return response
-#comment
+
 @router.patch("/{projectid}/user/{userid}")
 def update(projectdto: ProjectUpdateDto, projectid: int, userid: int, db: Session = Depends(get_db)):
     response = Response()
