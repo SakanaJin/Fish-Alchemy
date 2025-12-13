@@ -8,14 +8,15 @@ from Fish_Alchemy_Data.Common.Response import Response, HttpException
 from Fish_Alchemy_Data.Entities.Projects import Project, ProjectGetDto, ProjectUpdateDto, ProjectCreateDto, DEFAULT_LOGO, DEFAULT_BANNER
 from Fish_Alchemy_Data.Entities.Groups import Group
 from Fish_Alchemy_Data.Entities.Users import User
+from Fish_Alchemy_Data.Controllers.AuthController import get_current_user
 
 LOGO_PATH = "/media/project/logo"
 BANNER_PATH = "/media/project/banner"
 
 router = APIRouter(prefix="/api/projects", tags=['Projects'])
 
-@router.post("/groupid/{groupid}/userid/{userid}")
-def create(projectdto: ProjectCreateDto, groupid: int, userid: int, db: Session = Depends(get_db)):
+@router.post("/groupid/{groupid}")
+def create(projectdto: ProjectCreateDto, groupid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     if len(projectdto.name) == 0:
         response.add_error("name", "name cannot be empty")
@@ -23,7 +24,7 @@ def create(projectdto: ProjectCreateDto, groupid: int, userid: int, db: Session 
     group = db.query(Group).filter(Group.id == groupid).first()
     if not group:
         response.add_error("group", "group not found")
-    user = db.query(User).filter(User.id == userid).first()
+    user = db.query(User).filter(User.id == user.id).first()
     if not user:
         response.add_error("user", "user not found")
     if response.has_errors:
@@ -41,8 +42,8 @@ def create(projectdto: ProjectCreateDto, groupid: int, userid: int, db: Session 
     response.data=project.toGetDto()
     return response
 
-@router.patch("/{projectid}/user/{userid}")
-def update(projectdto: ProjectUpdateDto, projectid: int, userid: int, db: Session = Depends(get_db)):
+@router.patch("/{projectid}")
+def update(projectdto: ProjectUpdateDto, projectid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if len(projectdto.name) == 0:
@@ -51,7 +52,7 @@ def update(projectdto: ProjectUpdateDto, projectid: int, userid: int, db: Sessio
         response.add_error("id", "project not found")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "only lead can update project")
         raise HttpException(status_code=400, response=response)
     project.name = projectdto.name    
@@ -62,14 +63,14 @@ def update(projectdto: ProjectUpdateDto, projectid: int, userid: int, db: Sessio
     response.data = project.toGetDto()
     return response
 
-@router.patch("/{projectid}/lead/{leadid}/user/{userid}")
-def change_lead(projectid: int, leadid: int, userid: int, db: Session = Depends(get_db)):
+@router.patch("/{projectid}/user/{userid}")
+def change_lead(projectid: int, userid: int, db: Session = Depends(get_db), lead: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
         response.add_error("id", "project not found")
         raise HttpException(status_code=404, response=response)
-    if project.lead_id != leadid:
+    if project.lead_id != lead.id:
         response.add_error("lead", "only lead can chage lead")
     if project.lead_id == userid:
         response.add_error("user", "user is already lead")
@@ -100,8 +101,8 @@ def get_all(db: Session = Depends(get_db)):
     response.data = [project.toGetDto() for project in projects]
     return response
 
-@router.patch("/{projectid}/logo/user/{userid}")
-async def update_logo(projectid: int, userid: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+@router.patch("/{projectid}/logo")
+async def update_logo(projectid: int, file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
@@ -110,7 +111,7 @@ async def update_logo(projectid: int, userid: int, file: UploadFile = File(...),
         response.add_error("file", "file must be an image")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "only lead can update logo")
         raise HttpException(status_code=400, response=response)
     extension = file.filename.split(".")[-1]
@@ -126,8 +127,8 @@ async def update_logo(projectid: int, userid: int, file: UploadFile = File(...),
     response.data = project.toGetDto()
     return response
 
-@router.patch("/{projectid}/banner/user/{userid}")
-async def update_banner(projectid: int, userid: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+@router.patch("/{projectid}/banner")
+async def update_banner(projectid: int, file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
@@ -136,7 +137,7 @@ async def update_banner(projectid: int, userid: int, file: UploadFile = File(...
         response.add_error("file", "file must be an image")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "only lead can update banner")
         raise HttpException(status_code=400, response=response)
     extension = file.filename.split(".")[-1]
@@ -152,8 +153,8 @@ async def update_banner(projectid: int, userid: int, file: UploadFile = File(...
     response.data = project.toGetDto()
     return response
 
-@router.delete("/{projectid}/logo/user/{userid}")
-def remove_logo(projectid: int, userid: int, db: Session = Depends(get_db)):
+@router.delete("/{projectid}/logo")
+def remove_logo(projectid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
@@ -161,7 +162,7 @@ def remove_logo(projectid: int, userid: int, db: Session = Depends(get_db)):
         raise HttpException(status_code=404, response=response)
     if project.logo_path == DEFAULT_LOGO:
         response.add_error("logo", "no logo")
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "only lead can remove logo")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
@@ -172,8 +173,8 @@ def remove_logo(projectid: int, userid: int, db: Session = Depends(get_db)):
     response.data = project.toGetDto()
     return response
 
-@router.delete("/{projectid}/banner/user/{userid}")
-def remove_banner(projectid: int, userid: int, db: Session = Depends(get_db)):
+@router.delete("/{projectid}/banner")
+def remove_banner(projectid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
@@ -181,7 +182,7 @@ def remove_banner(projectid: int, userid: int, db: Session = Depends(get_db)):
         raise HttpException(status_code=400, response=response)
     if project.banner_path == DEFAULT_BANNER:
         response.add_error("banner", "no banner")
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "only lead can remove banner")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
@@ -192,14 +193,14 @@ def remove_banner(projectid: int, userid: int, db: Session = Depends(get_db)):
     response.data = project.toGetDto()
     return response
 
-@router.delete("/{projectid}/user/{userid}")
-def delete(projectid: int, userid: int, db: Session = Depends(get_db)):
+@router.delete("/{projectid}")
+def delete(projectid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     project = db.query(Project).filter(Project.id == projectid).first()
     if not project:
         response.add_error("id", "project not found")
         raise HttpException(status_code=404, response="Project not found")
-    if project.lead_id != userid:
+    if project.lead_id != user.id:
         response.add_error("user", "Only lead can delete project")
         raise HttpException(status_code=400, response=response)
     db.delete(project)
