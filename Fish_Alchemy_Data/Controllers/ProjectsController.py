@@ -5,7 +5,7 @@ import uuid
 from Fish_Alchemy_Data.database import get_db
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
 
-from Fish_Alchemy_Data.Entities.Projects import Project, ProjectGetDto, ProjectUpdateDto, ProjectCreateDto, DEFAULT_LOGO, DEFAULT_BANNER
+from Fish_Alchemy_Data.Entities.Projects import Project, ProjectUpdateDto, ProjectCreateDto, DEFAULT_LOGO, DEFAULT_BANNER
 from Fish_Alchemy_Data.Entities.Groups import Group
 from Fish_Alchemy_Data.Entities.Users import User
 from Fish_Alchemy_Data.Controllers.AuthController import get_current_user

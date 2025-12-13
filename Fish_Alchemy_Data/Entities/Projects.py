@@ -71,7 +71,7 @@ class Project(Base):
             github_url=self.github_url, logo_path=self.logo_path, 
             banner_path=self.banner_path, 
             group=self.group.toShallowDto(),
-            tickets=[ticket.toShallowDto for ticket in self.tickets]
+            tickets=[ticket.toShallowDto() for ticket in self.tickets]
         )
         return projectdto
     

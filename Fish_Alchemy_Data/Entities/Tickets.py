@@ -1,12 +1,28 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum, DateTime
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from Fish_Alchemy_Data.database import Base
 from Fish_Alchemy_Data.Common.TicketState import TicketState
 from Fish_Alchemy_Data.Entities.Users import UserShallowDto
 from Fish_Alchemy_Data.Entities.Projects import ProjectShallowDto
+
+class TicketCreateDto(BaseModel):
+    name: str
+    description: str
+    github_url: str
+
+class TicketUpdateDto(BaseModel):
+    name: str
+    description: str
+    github_url: str
+
+class TicketStateDto(BaseModel):
+    state: str
+
+class TicketDateDto(BaseModel):
+    date: str
 
 class TicketGetDto(BaseModel):
     id: int
@@ -36,8 +52,8 @@ class Ticket(Base):
     ticketnum = Column(Integer)
     state = Column(Enum(TicketState), default=TicketState.BACKLOG, nullable=False)
     github_url = Column(String(255))
-    created_at = Column(DateTime(timezone=True), default=datetime.now)
-    duedate = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.now())
+    duedate = Column(DateTime(timezone=True), default=datetime.now() + timedelta(weeks=1))
 
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="tickets")

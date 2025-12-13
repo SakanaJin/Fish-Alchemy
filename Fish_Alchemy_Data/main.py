@@ -18,7 +18,7 @@ from Fish_Alchemy_Data.Entities.Graphs import Graph
 from Fish_Alchemy_Data.Entities.Nodes import Node
 from Fish_Alchemy_Data.Entities.NodeAssociation import NodeAssociation
 
-from Fish_Alchemy_Data.Controllers import UsersController, AuthController, GroupsController, ProjectsController
+from Fish_Alchemy_Data.Controllers import UsersController, AuthController, GroupsController, ProjectsController, TicketsController
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +31,7 @@ app.include_router(UsersController.router)
 app.include_router(AuthController.router)
 app.include_router(GroupsController.router)
 app.include_router(ProjectsController.router)
+app.include_router(TicketsController.router)
 
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
