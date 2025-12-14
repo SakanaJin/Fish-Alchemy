@@ -33,6 +33,7 @@ class ProjectGetDto(BaseModel):
     banner_path: str
     group: GroupShallowDto
     tickets: list
+    graphs: list
 
 class ProjectShallowDto(BaseModel):
     id: int
@@ -71,7 +72,8 @@ class Project(Base):
             github_url=self.github_url, logo_path=self.logo_path, 
             banner_path=self.banner_path, 
             group=self.group.toShallowDto(),
-            tickets=[ticket.toShallowDto() for ticket in self.tickets]
+            tickets=[ticket.toShallowDto() for ticket in self.tickets],
+            graphs=[graph.toShallowDto() for graph in self.graphs]
         )
         return projectdto
     

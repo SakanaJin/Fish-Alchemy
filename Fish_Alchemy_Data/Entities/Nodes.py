@@ -5,13 +5,21 @@ from pydantic import BaseModel
 from Fish_Alchemy_Data.database import Base
 from Fish_Alchemy_Data.Entities.Graphs import GraphShallowDto
 
+class NodeCreateDto(BaseModel):
+    name: str
+    description: str
+
+class NodeUpdateDto(BaseModel):
+    name: str
+    description: str
+
 class NodeGetDto(BaseModel):
     id: int
     name: str
     description: str
     graph: GraphShallowDto
     dependencies: list
-    dependants: list
+    # dependents: list
 
 class NodeShallowDto(BaseModel):
     id: int
@@ -31,8 +39,16 @@ class Node(Base):
         secondary="node_associations",
         primaryjoin="NodeAssociation.dependent_id==Node.id",
         secondaryjoin="NodeAssociation.dependency_id==Node.id",
-        backref="dependents"
+        # backref="dependents"
     )
+
+    # dependents = relationship(
+    #     "Node",
+    #     secondary="node_associations",
+    #     primaryjoin="NodeAssociation.dependency_id==Node.id",
+    #     secondaryjoin="NodeAssociation.dependent_id==Node.id",
+    #     backref="dependencies"
+    # )
 
     def toGetDto(self) -> NodeGetDto:
         nodedto = NodeGetDto(
@@ -41,7 +57,7 @@ class Node(Base):
             description=self.description,
             graph=self.graph.toShallowDto(),
             dependencies=[node.toShallowDto() for node in self.dependencies],
-            dependents=[node.toShallowDto() for node in self.dependents]
+            # dependents=[node.toShallowDto() for node in self.dependents]
         )
         return nodedto
     

@@ -6,6 +6,14 @@ from datetime import datetime
 from Fish_Alchemy_Data.database import Base
 from Fish_Alchemy_Data.Entities.Projects import ProjectShallowDto
 
+class GraphCreateDto(BaseModel):
+    name: str
+    description: str
+
+class GraphUpdateDto(BaseModel):
+    name: str
+    description: str
+
 class GraphGetDto(BaseModel):
     id: int
     name: str
