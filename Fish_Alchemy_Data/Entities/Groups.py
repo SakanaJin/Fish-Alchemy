@@ -34,7 +34,7 @@ class Group(Base):
     banner_path = Column(String(255), default="/media/group/banner/default.png")
 
     users = relationship("User", secondary='user_group', back_populates='groups')
-    projects = relationship("Project", back_populates="group")
+    projects = relationship("Project", back_populates="group", cascade="all, delete-orphan")
 
     def toGetDto(self) -> GroupGetDto:
         groupgetdto = GroupGetDto(

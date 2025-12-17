@@ -31,10 +31,10 @@ class Graph(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text)
 
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"))
     project = relationship("Project", back_populates="graphs")
 
-    nodes = relationship("Node", back_populates="graph")
+    nodes = relationship("Node", back_populates="graph", cascade="all, delete-orphan")
 
     def toGetDto(self) -> GraphGetDto:
         graphdto = GraphGetDto(

@@ -58,7 +58,7 @@ class Ticket(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="tickets")
 
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"))
     project = relationship("Project", back_populates="tickets")
 
     def toGetDto(self) -> TicketGetDto:

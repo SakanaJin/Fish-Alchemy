@@ -51,12 +51,12 @@ class Project(Base):
     logo_path = Column(String(255), default="/media/project/logo/default.png")
     banner_path = Column(String(255), default="/media/project/banner/default.jpg")
 
-    group_id = Column(Integer, ForeignKey("groups.id"))
+    group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"))
     group = relationship("Group", back_populates="projects")
 
-    tickets = relationship("Ticket", back_populates="project")
+    tickets = relationship("Ticket", back_populates="project", cascade="all, delete-orphan")
 
-    graphs = relationship("Graph", back_populates="project")
+    graphs = relationship("Graph", back_populates="project", cascade="all, delete-orphan")
 
     lead_id = Column(Integer, ForeignKey("users.id"))
     lead = relationship("User")
