@@ -4,9 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
-from Fish_Alchemy_Data.database import Base, engine
+from Fish_Alchemy_Data.database import Base, engine, db_session, URIELPASS
 
 from Fish_Alchemy_Data.Common.Response import HttpException
+from Fish_Alchemy_Data.Common.Role import Role
 
 from Fish_Alchemy_Data.Entities.Users import User
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
@@ -23,6 +24,7 @@ from Fish_Alchemy_Data.Controllers import UsersController, AuthController, Group
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    seed_Uriel()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -51,3 +53,21 @@ def HttpExceptionHandler(request: Request, exception: HttpException):
         exception.response.model_dump(),
         status_code=exception.status_code
     )
+
+def seed_Uriel():
+    with db_session() as db:
+        if db.query(User).filter(User.username == "Uriel").first():
+            return
+        Uriel = User(
+            username="Uriel"
+        )
+        db.add(Uriel)
+        db.flush()
+        UrielAuth = UserAuth(
+            id=Uriel.id,
+            email="Uriel@Heaven.God", # I really hope this domain doesn't exist because I sure ain't checkin
+            role=Role.ADMIN,
+            password_hash=UsersController.create_password_hash(URIELPASS)
+        )
+        db.add(UrielAuth)
+        db.commit()

@@ -11,6 +11,7 @@ from Fish_Alchemy_Data.Entities.Users import User, UserCreateDto, UserUpdateDto,
 from Fish_Alchemy_Data.Entities.Auth import UserAuth
 from Fish_Alchemy_Data.Controllers.AuthController import require_admin
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
+from Fish_Alchemy_Data.Common.Role import Role
 from Fish_Alchemy_Data.database import get_db
 
 PFP_PATH = "/media/user/pfp"
@@ -26,6 +27,8 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add ba
     response = Response()
     if len(userdto.username) == 0:
         response.add_error("username", "Cannot be empty")
+    if userdto.username == "Uriel":
+        response.add_error("username", "you can't have that one")
     if len(userdto.email) == 0:
         response.add_error("email", "Cannot be empty")
     if len(userdto.password) == 0:
@@ -180,6 +183,9 @@ def delete_user(id: int, db: Session = Depends(get_db), admin: User = Depends(re
     if not user:
         response.add_error("id", "user not found")
         raise HttpException(status_code=404, response=response)
+    if user.username == "Uriel" and user.auth.role == Role.ADMIN:
+        response.add_error("Hubris", ":(")
+        raise HttpException(status_code=403, response=response)
     db.delete(user)
     db.commit()
     response.data = True
