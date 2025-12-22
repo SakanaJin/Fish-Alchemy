@@ -11,13 +11,13 @@ import api from "../config/axios";
 const currentUser = "currentUser";
 
 //functions for setting session storage
-const setUserItem = (user: UserGetDto) => {
-  sessionStorage.setItem(currentUser, JSON.stringify(mapUser(user)));
-};
+// const setUserItem = (user: UserGetDto) => {
+//   sessionStorage.setItem(currentUser, JSON.stringify(mapUser(user)));
+// };
 
-const removeUserItem = () => {
-  sessionStorage.removeItem(currentUser);
-};
+// const removeUserItem = () => {
+//   sessionStorage.removeItem(currentUser);
+// };
 
 type AuthState = {
   user: UserGetDto | null;
@@ -44,7 +44,9 @@ export const AuthProvider = (props: any) => {
   const fetchCurrentUser = useAsyncRetry(async () => {
     setErrors([]);
 
-    const response = await api.get<GetUserResponse>(`/api/get-current-user`);
+    const response = await api.get<GetUserResponse>(
+      `/api/auth/get-current-user`
+    );
 
     if (response.data.hasErrors) {
       response.data.errors.forEach((err) => {
@@ -58,7 +60,7 @@ export const AuthProvider = (props: any) => {
     setErrors(response.data.errors);
 
     //Setting the session storage item of the user.
-    setUserItem(response.data.data);
+    // setUserItem(response.data.data);
   }, []);
 
   //Same deal as login.  This function is used to call the logout endpoint
@@ -66,7 +68,7 @@ export const AuthProvider = (props: any) => {
     setErrors([]);
 
     //Setting up axios call
-    const response = await api.post(`/api/logout`);
+    const response = await api.post(`/api/auth/logout`);
 
     if (response.status !== StatusCodes.OK) {
       console.log(`Error on logout: ${response.statusText}`);
@@ -76,7 +78,7 @@ export const AuthProvider = (props: any) => {
     console.log("Successfully Logged Out!");
 
     if (response.status === StatusCodes.OK) {
-      removeUserItem();
+      // removeUserItem();
       setUser(null);
     }
 

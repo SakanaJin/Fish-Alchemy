@@ -1,26 +1,24 @@
-import type { ApiResponse } from "../../constants/types";
-import { useAsyncFn } from "react-use";
+import type { ApiResponse, LoginDto } from "../../constants/types";
 import { useForm } from "@mantine/form";
 import type { FormErrors } from "@mantine/form";
-import { Alert, Button, Container, Input, Text } from "@mantine/core";
+import {
+  Button,
+  Center,
+  Paper,
+  PasswordInput,
+  Space,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import api from "../../config/axios";
-import { showNotification } from "@mantine/notifications";
-
-const baseUrl = "http://localhost:8000";
-
-type LoginRequest = {
-  username: string;
-  password: string;
-};
-
-type LoginResponse = ApiResponse<boolean>;
+// import { notifications } from "@mantine/notifications";
 
 export const LoginPage = ({
   fetchCurrentUser,
 }: {
   fetchCurrentUser: () => void;
 }) => {
-  const form = useForm<LoginRequest>({
+  const form = useForm<LoginDto>({
     initialValues: {
       username: "",
       password: "",
@@ -33,12 +31,11 @@ export const LoginPage = ({
     },
   });
 
-  const [, submitLogin] = useAsyncFn(async (values: LoginRequest) => {
-    if (baseUrl === undefined) {
-      return;
-    }
-
-    const response = await api.post<LoginResponse>(`/api/authenticate`, values);
+  const submitLogin = async (values: LoginDto) => {
+    const response = await api.post<ApiResponse<boolean>>(
+      `/api/auth/login`,
+      values
+    );
     if (response.data.hasErrors) {
       const formErrors: FormErrors = response.data.errors.reduce(
         (prev, curr) => {
@@ -51,43 +48,37 @@ export const LoginPage = ({
     }
 
     if (response.data.data) {
-      showNotification({ message: "Successfully Logged In!", color: "green" });
+      // notifications.show({
+      //   message: "Sucessfully logged in",
+      //   color: "green",
+      // });
       fetchCurrentUser();
     }
-  }, []);
+  };
 
   return (
-    <Container>
-      <Container px={0}>
-        {form.errors[""] && (
-          <Alert color="red">
-            <Text>{form.errors[""]}</Text>
-          </Alert>
-        )}
+    <Center style={{ width: "100vw", height: "100vh" }}>
+      <Paper shadow="sm" withBorder p="xl">
+        <Title size="h2">Login</Title>
+        <Space h="md" />
         <form onSubmit={form.onSubmit(submitLogin)}>
-          <Container px={0}>
-            <Container px={0}>
-              <Container px={0}>
-                <label htmlFor="userName">Username</label>
-              </Container>
-              <Input {...form.getInputProps("userName")} />
-              <Text c="red">{form.errors["userName"]}</Text>
-            </Container>
-            <Container px={0}>
-              <Container px={0}>
-                <label htmlFor="password">Password</label>
-              </Container>
-              <Input type="password" {...form.getInputProps("password")} />
-              <Text c="red">{form.errors["password"]}</Text>
-            </Container>
-
-            <Container px={0}>
-              <Button type="submit">Login</Button>
-            </Container>
-          </Container>
+          <label htmlFor="userName">Username</label>
+          <TextInput
+            key={form.key("username")}
+            {...form.getInputProps("username")}
+            style={{ width: "12vw" }}
+          />
+          <Space h="md" />
+          <label htmlFor="password">Password</label>
+          <PasswordInput
+            key={form.key("password")}
+            {...form.getInputProps("password")}
+          />
+          <Space h="md" />
+          <Button type="submit">Login</Button>
         </form>
-      </Container>
-    </Container>
+      </Paper>
+    </Center>
   );
 };
 

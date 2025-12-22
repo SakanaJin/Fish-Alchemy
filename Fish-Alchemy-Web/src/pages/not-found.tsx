@@ -1,5 +1,13 @@
-import { AppShellHeader } from "@mantine/core";
+import { useUser } from "../authentication/use-auth";
 
 export const NotFoundPage = () => {
-  return <AppShellHeader h={60}>Page Not Found</AppShellHeader>;
+  const user = useUser();
+
+  return (
+    <>
+      <header>page not found</header>
+      <text>{user.username}</text>
+      <img src={`http://127.0.0.1:8000${user.banner_path}`}></img>
+    </>
+  );
 };

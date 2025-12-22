@@ -79,7 +79,8 @@ def get_current_user_endpoint(user: User = Depends(get_current_user)):
 def user_logout(fastres: FastRes):
     response = Response()
     fastres.delete_cookie(COOKIE_NAME)
-    response.data={"message": "Logged out successfully"}
+    # response.data={"message": "Logged out successfully"}
+    response.data = True
     return response
 
 @router.post("/login")
@@ -98,5 +99,6 @@ def user_login(fastres: FastRes, logindto: LoginDto, db: Session = Depends(get_d
         samesite="lax",
         secure=False, # use true in prod https
     )
-    response.data = {"message": "Logged in successfully"}
+    # response.data = {"message": "Logged in successfully"}
+    response.data = True
     return response

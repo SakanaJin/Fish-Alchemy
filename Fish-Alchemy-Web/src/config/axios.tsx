@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import type { ApiResponse } from "../constants/types";
 
-const baseurl = "http://localhost:8000";
+const baseurl = "http://127.0.0.1:8000";
 
 const axiosInstance = axios.create({
   baseURL: baseurl,
@@ -73,22 +73,27 @@ axiosInstance.interceptors.response.use((x: any) => x, handleResponseError);
 
 function post<T>(route: string, data: any) {
   var url = baseurl + route;
-  return axiosInstance.post<T>(url, data);
+  return axiosInstance.post<T>(url, data, { withCredentials: true });
 }
 
 function get<T>(route: string) {
   var url = baseurl + route;
-  return axiosInstance.get<T>(url);
+  return axiosInstance.get<T>(url, { withCredentials: true });
 }
 
 function put<T>(route: string, data: any) {
   var url = baseurl + route;
-  return axiosInstance.put<T>(url, data);
+  return axiosInstance.put<T>(url, data, { withCredentials: true });
+}
+
+function patch<T>(route: string, data: any) {
+  var url = baseurl + route;
+  return axiosInstance.patch<T>(url, data, { withCredentials: true });
 }
 
 function remove<T>(route: string) {
   var url = baseurl + route;
-  return axiosInstance.delete<T>(url);
+  return axiosInstance.delete<T>(url, { withCredentials: true });
 }
 
 type Api = {
@@ -96,12 +101,14 @@ type Api = {
   get<T>(url: string): Promise<AxiosResponse<T>>;
   delete<T>(route: string): Promise<AxiosResponse<T>>;
   put<T>(route: string, data: any): Promise<AxiosResponse<T>>;
+  patch<T>(route: string, data: any): Promise<AxiosResponse<T>>;
 };
 
 const api = {} as Api;
 
 api.get = get;
 api.put = put;
+api.patch = patch;
 api.post = post;
 api.delete = remove;
 

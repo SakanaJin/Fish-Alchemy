@@ -21,3 +21,8 @@ export interface UserGetDto {
   groups: any[]; //GroupShallowDto[]
   tickets: any[]; //TicketShallowDto[]
 }
+
+export interface LoginDto {
+  username: string;
+  password: string;
+}
