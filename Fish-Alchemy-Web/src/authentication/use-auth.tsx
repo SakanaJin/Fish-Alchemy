@@ -8,7 +8,7 @@ import { StatusCodes } from "../constants/status-codes";
 import { Loader } from "@mantine/core";
 import api from "../config/axios";
 
-const currentUser = "currentUser";
+// const currentUser = "currentUser";
 
 //functions for setting session storage
 // const setUserItem = (user: UserGetDto) => {
@@ -39,8 +39,6 @@ export const AuthProvider = (props: any) => {
   const [errors, setErrors] = useState<ApiError[]>(INITIAL_STATE.errors);
   const [user, setUser] = useState<UserGetDto | null>(INITIAL_STATE.user);
 
-  //This is the main function for getting the user information from the database.
-  //This function gets called on every "notify("user-login") in order to refetch the user data."
   const fetchCurrentUser = useAsyncRetry(async () => {
     setErrors([]);
 
@@ -55,19 +53,13 @@ export const AuthProvider = (props: any) => {
       return response.data;
     }
 
-    //Updating the state of the context to have the user data as well as any errors.
     setUser(response.data.data);
     setErrors(response.data.errors);
-
-    //Setting the session storage item of the user.
-    // setUserItem(response.data.data);
   }, []);
 
-  //Same deal as login.  This function is used to call the logout endpoint
   const [, logoutUser] = useAsyncFn(async () => {
     setErrors([]);
 
-    //Setting up axios call
     const response = await api.post(`/api/auth/logout`);
 
     if (response.status !== StatusCodes.OK) {
@@ -85,18 +77,14 @@ export const AuthProvider = (props: any) => {
     return response;
   }, []);
 
-  //This returns a Loading screen if the API call takes a long time to get user info
   if (fetchCurrentUser.loading) {
     return <Loader />;
   }
 
-  //Brings unauthenticated users to the login page.
-  //This can be made to bring them to a different part of the app eventually
   if (!user && !fetchCurrentUser.loading) {
     return <LoginPage fetchCurrentUser={fetchCurrentUser.retry} />;
   }
 
-  //Once they are logged in and not loading, it brings them to the app.
   return (
     <AuthContext.Provider
       value={{
@@ -116,7 +104,6 @@ export function useAuth(): AuthState {
   return useContext(AuthContext);
 }
 
-//This function is available anywhere wrapped inside of the <AuthProvider>.  See Config.tsx for example.
 export function useUser(): UserGetDto {
   const { user } = useContext(AuthContext);
   if (!user) {

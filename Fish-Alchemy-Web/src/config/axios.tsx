@@ -2,8 +2,9 @@ import { notifications } from "@mantine/notifications";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import type { ApiResponse } from "../constants/types";
+import { EnvVars } from "./env-vars";
 
-const baseurl = "http://127.0.0.1:8000";
+const baseurl = EnvVars.apiBaseUrl;
 
 const axiosInstance = axios.create({
   baseURL: baseurl,

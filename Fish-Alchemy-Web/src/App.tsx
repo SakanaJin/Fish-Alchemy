@@ -4,14 +4,17 @@ import { AuthProvider } from "./authentication/use-auth";
 import { Routes } from "./routes/RouteConfig";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import { PageWrapper } from "./components/page-wrapper";
 
 function App() {
   return (
-    <MantineProvider forceColorScheme="dark">
+    <MantineProvider defaultColorScheme="dark">
       <Notifications />
       <Container fluid px={0} className="App">
         <AuthProvider>
-          <Routes />
+          <PageWrapper>
+            <Routes />
+          </PageWrapper>
         </AuthProvider>
       </Container>
     </MantineProvider>
