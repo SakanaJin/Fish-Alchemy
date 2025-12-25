@@ -3,7 +3,19 @@ import api from "../../config/axios";
 import type { ApiResponse, UserGetDto } from "../../constants/types";
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react";
-import { Center, Loader } from "@mantine/core";
+import {
+  AspectRatio,
+  Avatar,
+  Center,
+  Loader,
+  Image,
+  Container,
+  Title,
+} from "@mantine/core";
+import { EnvVars } from "../../config/env-vars";
+
+const baseurl = EnvVars.apiBaseUrl;
+const sideMargin = "100px";
 
 export const UserPage = () => {
   const { id } = useParams();
@@ -32,7 +44,26 @@ export const UserPage = () => {
   return (
     <>
       {user ? (
-        <header>{user.username}</header>
+        <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>
+          <AspectRatio ratio={7}>
+            <Image src={baseurl + user.banner_path} radius="md" />
+            <Avatar
+              size="100"
+              style={{
+                marginLeft: "20px",
+                zIndex: 10,
+                transform: "translateY(-35px)",
+              }}
+              color="var(--mantine-color-body)"
+              bg="var(--mantine-color-body)"
+            >
+              <Avatar src={baseurl + user.pfp_path} size="80" />{" "}
+            </Avatar>
+          </AspectRatio>
+          <Title style={{ transform: "translateY(-35px)", marginLeft: "30px" }}>
+            {user.username}
+          </Title>
+        </div>
       ) : (
         <Center style={{ height: "100vh", width: "100vw" }}>
           <Loader />
