@@ -78,102 +78,100 @@ export const UserPage = () => {
   }, []);
 
   return (
-    <>
-      <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>
-        <Skeleton visible={loading}>
-          <AspectRatio ratio={7}>
-            <Image src={baseurl + user?.banner_path!} radius="md" />
-            <Avatar
-              size="100"
-              style={{
-                marginLeft: "20px",
-                zIndex: 10,
-                transform: "translateY(-35px)",
-              }}
-              color="var(--mantine-color-body)"
-              bg="var(--mantine-color-body)"
-            >
-              <Avatar src={baseurl + user?.pfp_path!} size="80" />{" "}
-            </Avatar>
-          </AspectRatio>
-        </Skeleton>
-        <Title style={{ transform: "translateY(-35px)", marginLeft: "30px" }}>
-          {user?.username}
-        </Title>
-        <Tabs defaultValue="groups">
-          <Tabs.List>
-            <Tabs.Tab
-              value="groups"
-              leftSection={<FontAwesomeIcon icon={faFish} />}
-            >
-              Groups
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="tickets"
-              leftSection={<FontAwesomeIcon icon={faShrimp} />}
-            >
-              Tickets
-            </Tabs.Tab>
-          </Tabs.List>
-          <ScrollArea offsetScrollbars overscrollBehavior="contain">
-            <Tabs.Panel value="groups">
-              <Space h="sm" />
-              <TextInput
-                placeholder="search"
-                onChange={(event) =>
-                  handleGroupsChange(event.currentTarget.value)
-                }
-                leftSection={<FontAwesomeIcon icon={faSearch} />}
-              />
-              {groupsFiltered?.map((group) => {
+    <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>
+      <Skeleton visible={loading}>
+        <AspectRatio ratio={7}>
+          <Image src={baseurl + user?.banner_path!} radius="md" />
+          <Avatar
+            size="100"
+            style={{
+              marginLeft: "20px",
+              zIndex: 10,
+              transform: "translateY(-35px)",
+            }}
+            color="var(--mantine-color-body)"
+            bg="var(--mantine-color-body)"
+          >
+            <Avatar src={baseurl + user?.pfp_path!} size="80" />{" "}
+          </Avatar>
+        </AspectRatio>
+      </Skeleton>
+      <Title style={{ transform: "translateY(-35px)", marginLeft: "30px" }}>
+        {user?.username}
+      </Title>
+      <Tabs defaultValue="groups">
+        <Tabs.List>
+          <Tabs.Tab
+            value="groups"
+            leftSection={<FontAwesomeIcon icon={faFish} />}
+          >
+            Groups
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="tickets"
+            leftSection={<FontAwesomeIcon icon={faShrimp} />}
+          >
+            Tickets
+          </Tabs.Tab>
+        </Tabs.List>
+        <ScrollArea offsetScrollbars overscrollBehavior="contain">
+          <Tabs.Panel value="groups">
+            <Space h="sm" />
+            <TextInput
+              placeholder="search"
+              onChange={(event) =>
+                handleGroupsChange(event.currentTarget.value)
+              }
+              leftSection={<FontAwesomeIcon icon={faSearch} />}
+            />
+            {groupsFiltered?.map((group) => {
+              return (
+                <>
+                  <Space h="lg" /> <GroupCard group={group} />
+                </>
+              );
+            })}
+          </Tabs.Panel>
+          <Tabs.Panel value="tickets">
+            <Space h="sm" />
+            <TextInput
+              placeholder="search"
+              onChange={(event) =>
+                handleTicketsChange(event.currentTarget.value)
+              }
+              leftSection={<FontAwesomeIcon icon={faSearch} />}
+            />
+            <Space h="lg" />
+            <SimpleGrid cols={3} spacing="lg" verticalSpacing="lg">
+              {ticketsFiltered?.map((ticket) => {
                 return (
-                  <>
-                    <Space h="lg" /> <GroupCard group={group} />
-                  </>
+                  <Card withBorder shadow="sm">
+                    <Title>{ticket.name}</Title>
+                    <Space h="sm" />
+                    <Text>{ticket.description}</Text>
+                    <Space h="sm" />
+                    <Card.Section
+                      withBorder
+                      py="sm"
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginLeft: "5px",
+                        marginRight: "5px",
+                      }}
+                    >
+                      <Text>#{ticket.ticketnum}</Text>
+                      <TicketBadge state={ticket.state} />
+                    </Card.Section>
+                  </Card>
                 );
               })}
-            </Tabs.Panel>
-            <Tabs.Panel value="tickets">
-              <Space h="sm" />
-              <TextInput
-                placeholder="search"
-                onChange={(event) =>
-                  handleTicketsChange(event.currentTarget.value)
-                }
-                leftSection={<FontAwesomeIcon icon={faSearch} />}
-              />
-              <Space h="lg" />
-              <SimpleGrid cols={3} spacing="lg" verticalSpacing="lg">
-                {ticketsFiltered?.map((ticket) => {
-                  return (
-                    <Card withBorder shadow="sm">
-                      <Title>{ticket.name}</Title>
-                      <Space h="sm" />
-                      <Text>{ticket.description}</Text>
-                      <Space h="sm" />
-                      <Card.Section
-                        withBorder
-                        py="sm"
-                        style={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          marginLeft: "5px",
-                          marginRight: "5px",
-                        }}
-                      >
-                        <Text>#{ticket.ticketnum}</Text>
-                        <TicketBadge state={ticket.state} />
-                      </Card.Section>
-                    </Card>
-                  );
-                })}
-              </SimpleGrid>
-            </Tabs.Panel>
-          </ScrollArea>
-        </Tabs>
-      </div>
-    </>
+            </SimpleGrid>
+          </Tabs.Panel>
+        </ScrollArea>
+      </Tabs>
+    </div>
   );
 };

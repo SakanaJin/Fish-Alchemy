@@ -46,6 +46,7 @@ export interface UserShallowDto {
   id: number;
   username: string;
   pfp_path: string;
+  banner_path: string;
 }
 
 //Group types ----------------------------------------------------------------------------------
@@ -155,6 +156,7 @@ export interface TicketDateDto {
 export interface TicketShallowDto {
   id: number;
   name: string;
+  description: string;
   ticketnum: number;
   state: TicketState;
   created_at: string;

@@ -27,6 +27,7 @@ class UserShallowDto(BaseModel):
     id: int
     username: str
     pfp_path: str
+    banner_path: str
 
 class LoginDto(BaseModel):
     username: str
@@ -57,5 +58,5 @@ class User(Base):
         return userdto
     
     def toShallowDto(self) -> UserShallowDto:
-        userdto = UserShallowDto(id=self.id, username=self.username, pfp_path=self.pfp_path)
+        userdto = UserShallowDto(id=self.id, username=self.username, pfp_path=self.pfp_path, banner_path=self.banner_path)
         return userdto

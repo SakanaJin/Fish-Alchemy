@@ -3,4 +3,5 @@ export const routes = {
   home: `/home`,
   user: `/user/:id`,
   groupPage: `/group/:id`,
+  projectPage: `/group/:groupid/project/:projectid`,
 };
