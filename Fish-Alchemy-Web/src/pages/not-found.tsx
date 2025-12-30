@@ -1,16 +1,20 @@
-import { useUser } from "../authentication/use-auth";
-import { EnvVars } from "../config/env-vars";
+import { Center, Space, Title } from "@mantine/core";
+import { faCrow } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const NotFoundPage = () => {
-  const user = useUser();
-
-  const baseurl = EnvVars.apiBaseUrl;
-
   return (
-    <>
-      <header>page not found</header>
-      <text>{user.username}</text>
-      <img src={baseurl + user.banner_path}></img>
-    </>
+    <Center
+      style={{
+        width: "100vw",
+        height: "80vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Title>Nothing Here but us... Crows?</Title>
+      <Space h="sm" />
+      <FontAwesomeIcon icon={faCrow} size="3x" />
+    </Center>
   );
 };

@@ -11,7 +11,6 @@ import {
   Title,
 } from "@mantine/core";
 import api from "../../config/axios";
-// import { notifications } from "@mantine/notifications";
 
 export const LoginPage = ({
   fetchCurrentUser,
@@ -36,7 +35,7 @@ export const LoginPage = ({
       `/api/auth/login`,
       values
     );
-    if (response.data.hasErrors) {
+    if (response.data.has_errors) {
       const formErrors: FormErrors = response.data.errors.reduce(
         (prev, curr) => {
           Object.assign(prev, { [curr.property]: curr.message });
@@ -48,10 +47,6 @@ export const LoginPage = ({
     }
 
     if (response.data.data) {
-      // notifications.show({
-      //   message: "Sucessfully logged in",
-      //   color: "green",
-      // });
       fetchCurrentUser();
     }
   };
@@ -81,19 +76,3 @@ export const LoginPage = ({
     </Center>
   );
 };
-
-// const useStyles = createStyles(() => {
-//   return {
-//     generalErrors: {
-//       marginBottom: "8px",
-//     },
-
-//     loginButton: {
-//       marginTop: "8px",
-//     },
-
-//     formField: {
-//       marginBottom: "8px",
-//     },
-//   };
-// });

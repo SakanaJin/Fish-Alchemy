@@ -39,6 +39,7 @@ class TicketGetDto(BaseModel):
 class TicketShallowDto(BaseModel):
     id: int
     name: str
+    description: str
     ticketnum: int
     state: TicketState
     created_at: datetime
@@ -80,9 +81,10 @@ class Ticket(Base):
         ticketdto = TicketShallowDto(
             id=self.id,
             name=self.name,
+            description=self.description,
             ticketnum=self.ticketnum,
             state=self.state,
             created_at=self.created_at,
-            duedate=self.duedate
+            duedate=self.duedate,
         )
         return ticketdto

@@ -3,7 +3,7 @@
 export interface ApiResponse<T> {
   data: T;
   errors: ApiError[];
-  hasErrors: boolean;
+  has_errors: boolean;
 }
 
 export interface ApiError {
