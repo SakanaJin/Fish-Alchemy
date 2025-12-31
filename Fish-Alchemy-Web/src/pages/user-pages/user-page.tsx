@@ -162,7 +162,9 @@ export const UserPage = () => {
                         marginRight: "5px",
                       }}
                     >
-                      <Text>#{ticket.ticketnum}</Text>
+                      <Text>
+                        {ticket.projectname} #{ticket.ticketnum}
+                      </Text>
                       <TicketBadge state={ticket.state} />
                     </Card.Section>
                   </Card>

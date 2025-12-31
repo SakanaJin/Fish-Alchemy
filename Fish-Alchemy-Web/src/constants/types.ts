@@ -161,6 +161,7 @@ export interface TicketShallowDto {
   state: TicketState;
   created_at: string;
   duedate: string;
+  projectname: string;
 }
 
 //Graph Types ---------------------------------------------------------------------------------------
