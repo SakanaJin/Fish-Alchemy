@@ -45,6 +45,7 @@ class TicketShallowDto(BaseModel):
     created_at: datetime
     duedate: datetime
     projectname: str
+    user: UserShallowDto
 
 class Ticket(Base):
     __tablename__ = 'tickets'
@@ -87,6 +88,7 @@ class Ticket(Base):
             state=self.state,
             created_at=self.created_at,
             duedate=self.duedate,
-            projectname=self.project.name
+            projectname=self.project.name,
+            user=self.user.toShallowDto()
         )
         return ticketdto

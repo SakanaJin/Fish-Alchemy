@@ -3,6 +3,7 @@ import { NotFoundPage } from "../pages/not-found";
 import { routes } from "./RouteIndex";
 import { UserPage } from "../pages/user-pages/user-page";
 import { GroupPage } from "../pages/group-pages/group-page";
+import { ProjectPage } from "../pages/project-pages/project-page";
 
 export const Routes = () => {
   return (
@@ -10,6 +11,7 @@ export const Routes = () => {
       <Switch>
         <Route path={routes.user} element={<UserPage />} />
         <Route path={routes.groupPage} element={<GroupPage />} />
+        <Route path={routes.projectPage} element={<ProjectPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Switch>
     </>
