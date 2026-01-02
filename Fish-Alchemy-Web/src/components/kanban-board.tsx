@@ -1,6 +1,10 @@
 import type React from "react";
-import { EnvVars } from "../config/env-vars";
-import type { TicketShallowDto } from "../constants/types";
+import {
+  type ApiResponse,
+  type TicketGetDto,
+  TicketState,
+  type TicketShallowDto,
+} from "../constants/types";
 import { useState } from "react";
 import {
   DndContext,
@@ -8,46 +12,219 @@ import {
   type DragStartEvent,
   type DragEndEvent,
   DragOverlay,
+  closestCorners,
+  type DragOverEvent,
 } from "@dnd-kit/core";
 import { TicketDraggable } from "./ticket-draggable";
+import { arrayMove } from "@dnd-kit/sortable";
+import { KanbanColumn } from "./kanban-column";
+import { SimpleGrid } from "@mantine/core";
+import api from "../config/axios";
+import { notifications } from "@mantine/notifications";
 
 interface KanbanBoardProps {
-  tickets?: TicketShallowDto[];
+  tickets: TicketShallowDto[];
 }
 
-const baseurl = EnvVars.apiBaseUrl;
+interface ColumnType {
+  id: string;
+  title: string;
+  state: TicketState;
+  tickets: TicketShallowDto[];
+}
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets }) => {
+  const initialColumns: ColumnType[] = [
+    {
+      id: "todo",
+      title: "To Do",
+      state: TicketState.BACKLOG,
+      tickets: tickets.filter((ticket) => {
+        return ticket.state === TicketState.BACKLOG;
+      }),
+    },
+    {
+      id: "inprogress",
+      title: "In Progress",
+      state: TicketState.INPROGRESS,
+      tickets: tickets.filter((ticket) => {
+        return ticket.state === TicketState.INPROGRESS;
+      }),
+    },
+    {
+      id: "inreview",
+      title: "In Review",
+      state: TicketState.REVIEW,
+      tickets: tickets.filter((ticket) => {
+        return ticket.state === TicketState.REVIEW;
+      }),
+    },
+    {
+      id: "finished",
+      title: "Finished",
+      state: TicketState.FINISHED,
+      tickets: tickets.filter((ticket) => {
+        return ticket.state === TicketState.FINISHED;
+      }),
+    },
+  ];
+  const [columns, setColumns] = useState(initialColumns);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+
+  const changeTicketState = async (
+    ticket: TicketShallowDto,
+    state: TicketState
+  ) => {
+    const response = await api.patch<ApiResponse<TicketGetDto>>(
+      `/api/tickets/${ticket.id}/state`,
+      { state: state }
+    );
+
+    if (response.data.has_errors) {
+      notifications.show({
+        title: "Error",
+        message: "Error changing ticket state",
+        color: "red",
+      });
+      setColumns((columns) => {
+        const next = structuredClone(columns);
+        const column = next.find((column) => column.state === ticket.state)!;
+
+        const oldIndex = column.tickets.findIndex(
+          (tick) => tick.id === ticket.id
+        );
+
+        column.tickets = arrayMove(column.tickets, oldIndex, 0);
+        return next;
+      });
+    }
+
+    if (response.data.data) {
+      ticket.state = response.data.data.state;
+    }
+  };
+
+  const findColumnByTicketnum = (ticketnum: UniqueIdentifier) =>
+    columns.find((column) =>
+      column.tickets.some((ticket) => ticket.ticketnum === ticketnum)
+    );
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id);
   };
 
-  const handleDragEnd = (_: DragEndEvent) => {
-    setActiveId(null);
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeColumn = findColumnByTicketnum(active.id);
+
+    const overColumn = columns.find((column) => column.id === over.id);
+    if (activeColumn && overColumn && activeColumn.id !== overColumn.id) {
+      setColumns((columns) => {
+        const next = structuredClone(columns);
+        const from = next.find((column) => column.id === activeColumn.id)!;
+        const to = next.find((column) => column.id === overColumn.id)!;
+        const ticketIndex = from.tickets.findIndex(
+          (ticket) => ticket.ticketnum === active.id
+        );
+        const [movedTicket] = from.tickets.splice(ticketIndex, 1);
+        to.tickets.push(movedTicket);
+        return next;
+      });
+      return;
+    }
+
+    const overTicketColumn = findColumnByTicketnum(over.id);
+
+    if (!activeColumn || !overTicketColumn) return;
+    if (activeColumn.id === overTicketColumn.id) return;
+
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+
+      const from = next.find((column) => column.id === activeColumn.id)!;
+      const to = next.find((column) => column.id === overTicketColumn.id)!;
+
+      const ticketIndex = from.tickets.findIndex(
+        (ticket) => ticket.ticketnum === active.id
+      );
+      const [movedTicket] = from.tickets.splice(ticketIndex, 1);
+
+      to.tickets.push(movedTicket);
+      return next;
+    });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) {
+      setActiveId(null);
+      return;
+    }
+
+    const activeColumn = findColumnByTicketnum(active.id);
+    if (!activeColumn) {
+      setActiveId(null);
+      return;
+    }
+
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      const column = next.find((column) => column.id === activeColumn.id)!;
+
+      const oldIndex = column.tickets.findIndex(
+        (ticket) => ticket.ticketnum === active.id
+      );
+      const newIndex = column.tickets.findIndex(
+        (ticket) => ticket.ticketnum === over.id
+      );
+
+      column.tickets = arrayMove(column.tickets, oldIndex, newIndex);
+      setActiveId(null);
+      return next;
+    });
+
+    const tick = tickets.find((ticket) => ticket.ticketnum === active.id)!;
+    if (activeColumn.state !== tick.state) {
+      changeTicketState(tick, activeColumn.state);
+    }
   };
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      {tickets?.map((ticket) => {
-        return (
-          <TicketDraggable
-            key={ticket.ticketnum}
-            ticket={ticket}
-            isDragging={activeId === ticket.ticketnum}
-          />
-        );
-      })}
-      <DragOverlay>
+    <DndContext
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      collisionDetection={closestCorners}
+    >
+      <SimpleGrid
+        cols={4}
+        verticalSpacing="100%"
+        style={{ marginTop: "10px", flexGrow: 1 }}
+      >
+        {columns.map((column) => {
+          return (
+            <KanbanColumn
+              id={column.id}
+              key={column.id}
+              title={column.title}
+              tickets={column.tickets}
+            />
+          );
+        })}
+      </SimpleGrid>
+      <DragOverlay style={{ cursor: "grab" }}>
         {activeId ? (
           <TicketDraggable
             key={activeId}
+            id={activeId}
             ticket={tickets?.find((ticket) => ticket.ticketnum === activeId)!}
-            isDragging={false}
           />
         ) : null}
       </DragOverlay>
     </DndContext>
   );
 };
+
+//wrapping the kanban columns components can be a simple grid with col=4 and align stretch

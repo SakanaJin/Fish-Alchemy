@@ -14,6 +14,7 @@ import {
   ScrollArea,
   Flex,
   Tabs,
+  Paper,
 } from "@mantine/core";
 import { routes } from "../../routes/RouteIndex";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -53,7 +54,12 @@ export const ProjectPage = () => {
   }, []);
 
   return (
-    <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>
+    <div
+      style={{
+        marginLeft: sideMargin,
+        marginRight: sideMargin,
+      }}
+    >
       <Skeleton visible={loading}>
         <Flex direction="row" h="10rem">
           <Flex direction="column" miw="15rem">
@@ -102,6 +108,7 @@ export const ProjectPage = () => {
       <Tabs
         style={{
           marginTop: "10px",
+          height: "100%",
         }}
         defaultValue="kanban"
       >
@@ -125,8 +132,15 @@ export const ProjectPage = () => {
             Graphs
           </Tabs.Tab>
         </Tabs.List>
-        <Tabs.Panel value="kanban" style={{ transform: "none" }}>
-          <KanbanBoard tickets={project?.tickets!} />
+        <Tabs.Panel
+          value="kanban"
+          style={{
+            transform: "none",
+          }}
+        >
+          <Flex h="calc(100vh - 320px">
+            {project?.tickets && <KanbanBoard tickets={project?.tickets!} />}
+          </Flex>
         </Tabs.Panel>
         <Tabs.Panel value="list">
           <ScrollArea
