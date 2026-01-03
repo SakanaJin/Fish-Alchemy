@@ -148,7 +148,9 @@ export const UserPage = () => {
                   <Card withBorder shadow="sm">
                     <Title>{ticket.name}</Title>
                     <Space h="sm" />
-                    <Text>{ticket.description}</Text>
+                    <ScrollArea h="5em">
+                      <Text>{ticket.description}</Text>
+                    </ScrollArea>
                     <Space h="sm" />
                     <Card.Section
                       withBorder

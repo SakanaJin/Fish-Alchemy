@@ -4,8 +4,9 @@ import {
   type TicketGetDto,
   TicketState,
   type TicketShallowDto,
+  type ColumnType,
 } from "../constants/types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   DndContext,
   type UniqueIdentifier,
@@ -18,22 +19,31 @@ import {
 import { TicketDraggable } from "./ticket-draggable";
 import { arrayMove } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./kanban-column";
-import { SimpleGrid } from "@mantine/core";
+import { ActionIcon, Flex, Menu, SimpleGrid, TextInput } from "@mantine/core";
 import api from "../config/axios";
 import { notifications } from "@mantine/notifications";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowDown,
+  faArrowUp,
+  faFilter,
+  faHashtag,
+  faPlus,
+  faSearch,
+  faSeedling,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+import { modals } from "@mantine/modals";
 
 interface KanbanBoardProps {
   tickets: TicketShallowDto[];
+  projectid: number;
 }
 
-interface ColumnType {
-  id: string;
-  title: string;
-  state: TicketState;
-  tickets: TicketShallowDto[];
-}
-
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+  tickets,
+  projectid,
+}) => {
   const initialColumns: ColumnType[] = [
     {
       id: "todo",
@@ -70,6 +80,90 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets }) => {
   ];
   const [columns, setColumns] = useState(initialColumns);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [ascending, setAscending] = useState(true);
+  const [search, setSearch] = useState("");
+  const filteredColumns = useMemo(() => {
+    if (!search.trim()) return columns;
+
+    return columns.map((column) =>
+      search[0] === "#"
+        ? {
+            ...column,
+            tickets: column.tickets.filter((ticket) =>
+              ticket.ticketnum.toString().includes(search.slice(1))
+            ),
+          }
+        : {
+            ...column,
+            tickets: column.tickets.filter((ticket) =>
+              ticket.name.toLowerCase().includes(search.toLowerCase())
+            ),
+          }
+    );
+  }, [columns, search]);
+
+  const addNewTicket = (newTicket: TicketShallowDto) => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next
+        .find((column) => column.state === TicketState.BACKLOG)
+        ?.tickets.push(newTicket);
+      return next;
+    });
+  };
+
+  const sortName = () => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next.forEach((column) => {
+        return column.tickets.sort((a, b) => {
+          return ascending
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+        });
+      });
+      return next;
+    });
+  };
+
+  const sortNum = () => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next.forEach((column) => {
+        return column.tickets.sort((a, b) => {
+          return ascending
+            ? a.ticketnum - b.ticketnum
+            : b.ticketnum - a.ticketnum;
+        });
+      });
+      return next;
+    });
+  };
+
+  const sortUsername = () => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next.forEach((column) => {
+        return column.tickets.sort((a, b) => {
+          return ascending
+            ? a.user.username.localeCompare(b.user.username)
+            : b.user.username.localeCompare(a.user.username);
+        });
+      });
+      return next;
+    });
+  };
+
+  const reverseColumnArrays = () => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next.forEach((column) => {
+        return column.tickets.reverse();
+      })!;
+      return next;
+    });
+    setAscending(!ascending);
+  };
 
   const changeTicketState = async (
     ticket: TicketShallowDto,
@@ -101,6 +195,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets }) => {
 
     if (response.data.data) {
       ticket.state = response.data.data.state;
+      setColumns((columns) => {
+        const next = structuredClone(columns);
+        const col = next.find((column) => column.state === state)!;
+        const tick = col.tickets.find((t) => t.id === ticket.id)!;
+        tick.state = ticket.state;
+        return next;
+      });
     }
   };
 
@@ -192,39 +293,105 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets }) => {
   };
 
   return (
-    <DndContext
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      collisionDetection={closestCorners}
-    >
-      <SimpleGrid
-        cols={4}
-        verticalSpacing="100%"
-        style={{ marginTop: "10px", flexGrow: 1 }}
+    <Flex direction="column" flex={1}>
+      <Flex pt="sm" align="center">
+        <TextInput
+          placeholder="search"
+          onChange={(event) => {
+            setSearch(event.currentTarget.value);
+          }}
+          leftSection={<FontAwesomeIcon icon={faSearch} />}
+          style={{ flexGrow: 1 }}
+        />
+        <ActionIcon.Group pl="sm">
+          <ActionIcon
+            h="36px"
+            w="36px"
+            onClick={() => {
+              reverseColumnArrays();
+            }}
+          >
+            <FontAwesomeIcon icon={ascending ? faArrowUp : faArrowDown} />
+          </ActionIcon>
+          <Menu shadow="sm">
+            <Menu.Target>
+              <ActionIcon h="36px" w="36px">
+                <FontAwesomeIcon icon={faFilter} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Label>Sort By</Menu.Label>
+              <Menu.Item
+                leftSection={<FontAwesomeIcon icon={faSeedling} />}
+                onClick={() => sortName()}
+              >
+                Name
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<FontAwesomeIcon icon={faHashtag} />}
+                onClick={() => sortNum()}
+              >
+                Number
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<FontAwesomeIcon icon={faUser} />}
+                onClick={() => sortUsername()}
+              >
+                User
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+          <ActionIcon
+            h="36px"
+            w="36px"
+            onClick={() => {
+              modals.openContextModal({
+                modal: "createticket",
+                title: "Create Ticket",
+                innerProps: {
+                  projectid: projectid,
+                  onSubmit: (newTicket) => addNewTicket(newTicket),
+                },
+              });
+            }}
+          >
+            <FontAwesomeIcon icon={faPlus} />
+          </ActionIcon>
+        </ActionIcon.Group>
+      </Flex>
+      <DndContext
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        collisionDetection={closestCorners}
       >
-        {columns.map((column) => {
-          return (
-            <KanbanColumn
-              id={column.id}
-              key={column.id}
-              title={column.title}
-              tickets={column.tickets}
+        <SimpleGrid
+          cols={4}
+          verticalSpacing="100%"
+          style={{ marginTop: "10px", flexGrow: 1 }}
+        >
+          {filteredColumns.map((column) => {
+            return (
+              <KanbanColumn
+                id={column.id}
+                key={column.id}
+                title={column.title}
+                tickets={column.tickets}
+              />
+            );
+          })}
+        </SimpleGrid>
+        <DragOverlay>
+          {activeId ? (
+            <TicketDraggable
+              key={activeId}
+              id={activeId}
+              ticket={tickets?.find((ticket) => ticket.ticketnum === activeId)!}
+              overlay={true}
             />
-          );
-        })}
-      </SimpleGrid>
-      <DragOverlay style={{ cursor: "grab" }}>
-        {activeId ? (
-          <TicketDraggable
-            key={activeId}
-            id={activeId}
-            ticket={tickets?.find((ticket) => ticket.ticketnum === activeId)!}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </Flex>
   );
 };
-
-//wrapping the kanban columns components can be a simple grid with col=4 and align stretch

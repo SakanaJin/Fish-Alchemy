@@ -162,6 +162,7 @@ export interface TicketShallowDto {
   created_at: string;
   duedate: string;
   projectname: string;
+  user: UserShallowDto;
 }
 
 //Graph Types ---------------------------------------------------------------------------------------
@@ -212,4 +213,13 @@ export interface NodeUpdateDto {
 export interface NodeShallowDto {
   id: number;
   name: string;
+}
+
+//Misc -------------------------------------------------------------------------------------------------------------
+
+export interface ColumnType {
+  id: string;
+  title: string;
+  state: TicketState;
+  tickets: TicketShallowDto[];
 }
