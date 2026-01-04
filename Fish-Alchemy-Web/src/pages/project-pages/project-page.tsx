@@ -14,6 +14,7 @@ import {
   ScrollArea,
   Flex,
   Tabs,
+  Anchor,
 } from "@mantine/core";
 import { routes } from "../../routes/RouteIndex";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -83,6 +84,7 @@ export const ProjectPage = () => {
                         routes.user.replace(":id", `${project?.lead.id}`)
                       )
                     }
+                    size="md"
                   />
                 </HoverCard.Target>
                 <HoverCard.Dropdown>
@@ -90,6 +92,9 @@ export const ProjectPage = () => {
                 </HoverCard.Dropdown>
               </HoverCard>
             </Flex>
+            <Anchor href={project?.github_url} truncate="end" w="225px">
+              {project?.github_url}
+            </Anchor>
           </Flex>
           <Card
             style={{ flexGrow: 1, marginLeft: "10px" }}
@@ -139,21 +144,19 @@ export const ProjectPage = () => {
         >
           <Flex h="calc(100vh - 320px">
             {project?.tickets && (
-              <KanbanBoard tickets={project?.tickets!} projectid={project.id} />
+              <KanbanBoard tickets={project.tickets} projectid={project.id} />
             )}
           </Flex>
         </Tabs.Panel>
         <Tabs.Panel value="list">
-          <ScrollArea
-            offsetScrollbars
-            overscrollBehavior="contain"
-          ></ScrollArea>
+          <ScrollArea offsetScrollbars overscrollBehavior="contain">
+            Nothing here yet
+          </ScrollArea>
         </Tabs.Panel>
         <Tabs.Panel value="graphs">
-          <ScrollArea
-            offsetScrollbars
-            overscrollBehavior="contain"
-          ></ScrollArea>
+          <ScrollArea offsetScrollbars overscrollBehavior="contain">
+            Nothing here yet
+          </ScrollArea>
         </Tabs.Panel>
       </Tabs>
     </div>

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 from Fish_Alchemy_Data.database import get_db
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
 
@@ -49,7 +49,9 @@ def create(ticketdto: TicketCreateDto, projectid: int, db: Session = Depends(get
         github_url=ticketdto.github_url,
         ticketnum=project.ticket_count,
         user=user,
-        project=project
+        project=project,
+        created_at=datetime.now(),
+        duedate=datetime.now() + timedelta(weeks=1)
     )
     db.add(ticket)
     db.commit()
@@ -83,7 +85,7 @@ def change_state(dto: TicketStateDto, id: int, db: Session = Depends(get_db), us
     if not ticket:
         response.add_error("id", "ticket not found")
         raise HttpException(status_code=404, response=response)
-    if user.id != ticket.project.lead_id or user.id != ticket.user_id:
+    if user.id != ticket.project.lead_id and user.id != ticket.user_id:
         response.add_error("user", "only lead or assigned user can change ticket state")
         raise HttpException(status_code=400, response=response)
     if dto.state not in TicketState:
@@ -113,6 +115,22 @@ def change_duedate(dto: TicketDateDto, id: int, db: Session = Depends(get_db), u
         response.add_error("date", "invalid date")
         raise HttpException(status_code=400, response=response)
     ticket.duedate = date
+    db.commit()
+    response.data = ticket.toGetDto()
+    return response
+
+@router.patch("/{ticketid}/user/{userid}")
+def assign_user(ticketid: int, userid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    response = Response()
+    ticket = db.query(Ticket).filter(Ticket.id == ticketid).first()
+    user = db.query(User).filter(User.id == userid).first()
+    if not ticket:
+        response.add_error("id", "ticket not found")
+    if not user:
+        response.add_error("id", "user not found")
+    if response.has_errors:
+        raise HttpException(status_code=404, response=response)
+    ticket.user = user
     db.commit()
     response.data = ticket.toGetDto()
     return response

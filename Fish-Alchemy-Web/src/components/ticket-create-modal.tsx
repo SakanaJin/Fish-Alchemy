@@ -9,10 +9,6 @@ import api from "../config/axios";
 import { type ContextModalProps } from "@mantine/modals";
 import { Button, Flex, Textarea, TextInput } from "@mantine/core";
 
-// interface TicketCreateModalFormProps {
-//   modalId: string;
-// }
-
 export const TicketCreateModalForm = ({
   context,
   id,
@@ -49,6 +45,7 @@ export const TicketCreateModalForm = ({
     if (response.data.data) {
       innerProps.onSubmit({
         ...response.data.data,
+        projectid: response.data.data.project.id,
         projectname: response.data.data.project.name,
       });
       form.reset();

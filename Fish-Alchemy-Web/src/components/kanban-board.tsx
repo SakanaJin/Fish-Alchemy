@@ -26,6 +26,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowDown,
   faArrowUp,
+  faCalendarDays,
   faFilter,
   faHashtag,
   faPlus,
@@ -36,7 +37,7 @@ import {
 import { modals } from "@mantine/modals";
 
 interface KanbanBoardProps {
-  tickets: TicketShallowDto[];
+  tickets?: TicketShallowDto[];
   projectid: number;
 }
 
@@ -49,33 +50,33 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       id: "todo",
       title: "To Do",
       state: TicketState.BACKLOG,
-      tickets: tickets.filter((ticket) => {
+      tickets: tickets?.filter((ticket) => {
         return ticket.state === TicketState.BACKLOG;
-      }),
+      })!,
     },
     {
       id: "inprogress",
       title: "In Progress",
       state: TicketState.INPROGRESS,
-      tickets: tickets.filter((ticket) => {
+      tickets: tickets?.filter((ticket) => {
         return ticket.state === TicketState.INPROGRESS;
-      }),
+      })!,
     },
     {
       id: "inreview",
       title: "In Review",
       state: TicketState.REVIEW,
-      tickets: tickets.filter((ticket) => {
+      tickets: tickets?.filter((ticket) => {
         return ticket.state === TicketState.REVIEW;
-      }),
+      })!,
     },
     {
       id: "finished",
       title: "Finished",
       state: TicketState.FINISHED,
-      tickets: tickets.filter((ticket) => {
+      tickets: tickets?.filter((ticket) => {
         return ticket.state === TicketState.FINISHED;
-      }),
+      })!,
     },
   ];
   const [columns, setColumns] = useState(initialColumns);
@@ -90,7 +91,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         ? {
             ...column,
             tickets: column.tickets.filter((ticket) =>
-              ticket.ticketnum.toString().includes(search.slice(1))
+              search.at(-1) === " "
+                ? ticket.ticketnum.toString() ===
+                  search.substring(1, search.length - 1)
+                : ticket.ticketnum.toString().includes(search.slice(1))
             ),
           }
         : {
@@ -109,6 +113,35 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         .find((column) => column.state === TicketState.BACKLOG)
         ?.tickets.push(newTicket);
       return next;
+    });
+  };
+
+  const updateTicket = (updatedTicket: TicketShallowDto) => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      const column = next.find(
+        (column) => column.state === updatedTicket.state
+      )!;
+      column.tickets = column.tickets.map((ticket) =>
+        ticket.id === updatedTicket.id ? updatedTicket : ticket
+      );
+      return next;
+    });
+  };
+
+  const deleteTicket = (toDelete: TicketShallowDto) => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      return next.map((column) =>
+        column.state !== toDelete.state
+          ? column
+          : {
+              ...column,
+              tickets: column.tickets.filter(
+                (ticket) => ticket.id != toDelete.id
+              ),
+            }
+      );
     });
   };
 
@@ -154,6 +187,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     });
   };
 
+  const sortDuedate = () => {
+    setColumns((columns) => {
+      const next = structuredClone(columns);
+      next.forEach((column) => {
+        return column.tickets.sort((a, b) => {
+          return ascending
+            ? new Date(a.duedate).getTime() - new Date(b.duedate).getTime()
+            : new Date(b.duedate).getTime() - new Date(a.duedate).getTime();
+        });
+      });
+      return next;
+    });
+  };
+
   const reverseColumnArrays = () => {
     setColumns((columns) => {
       const next = structuredClone(columns);
@@ -180,6 +227,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         message: "Error changing ticket state",
         color: "red",
       });
+      //this literally does not work
       setColumns((columns) => {
         const next = structuredClone(columns);
         const column = next.find((column) => column.state === ticket.state)!;
@@ -286,7 +334,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       return next;
     });
 
-    const tick = tickets.find((ticket) => ticket.ticketnum === active.id)!;
+    const tick = columns
+      .flatMap((column) => column.tickets)
+      .find((ticket) => ticket.ticketnum === active.id)!;
     if (activeColumn.state !== tick.state) {
       changeTicketState(tick, activeColumn.state);
     }
@@ -305,6 +355,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         />
         <ActionIcon.Group pl="sm">
           <ActionIcon
+            variant="default"
             h="36px"
             w="36px"
             onClick={() => {
@@ -315,7 +366,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </ActionIcon>
           <Menu shadow="sm">
             <Menu.Target>
-              <ActionIcon h="36px" w="36px">
+              <ActionIcon h="36px" w="36px" variant="default">
                 <FontAwesomeIcon icon={faFilter} />
               </ActionIcon>
             </Menu.Target>
@@ -339,15 +390,23 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               >
                 User
               </Menu.Item>
+              <Menu.Item
+                leftSection={<FontAwesomeIcon icon={faCalendarDays} />}
+                onClick={() => sortDuedate()}
+              >
+                Due Date
+              </Menu.Item>
             </Menu.Dropdown>
           </Menu>
           <ActionIcon
+            variant="default"
             h="36px"
             w="36px"
             onClick={() => {
               modals.openContextModal({
                 modal: "createticket",
                 title: "Create Ticket",
+                centered: true,
                 innerProps: {
                   projectid: projectid,
                   onSubmit: (newTicket) => addNewTicket(newTicket),
@@ -377,6 +436,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 key={column.id}
                 title={column.title}
                 tickets={column.tickets}
+                onTicketUpdate={(updatedTicket) => updateTicket(updatedTicket)}
+                onTicketDelete={(toDelete) => deleteTicket(toDelete)}
               />
             );
           })}
@@ -386,7 +447,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <TicketDraggable
               key={activeId}
               id={activeId}
-              ticket={tickets?.find((ticket) => ticket.ticketnum === activeId)!}
+              ticket={
+                columns
+                  .flatMap((column) => column.tickets)
+                  .find((ticket) => ticket.ticketnum === activeId)!
+              }
               overlay={true}
             />
           ) : null}

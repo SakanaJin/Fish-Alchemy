@@ -101,6 +101,18 @@ def get_all(db: Session = Depends(get_db)):
     response.data = [project.toGetDto() for project in projects]
     return response
 
+@router.get("/{id}/users")
+def get_users(id: int, db: Session = Depends(get_db)):
+    response = Response()
+    project = db.query(Project).filter(Project.id == id).first()
+    if not project:
+        response.add_error("id", "project not found")
+        raise HttpException(status_code=404, response=response)
+    group = project.group
+    users = db.query(Group).filter(Group.id == group.id).first().users
+    response.data = [user.toShallowDto() for user in users]
+    return response
+
 @router.patch("/{projectid}/logo")
 async def update_logo(projectid: int, file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()

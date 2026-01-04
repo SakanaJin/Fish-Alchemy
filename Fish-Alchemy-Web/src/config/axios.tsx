@@ -22,7 +22,7 @@ const errorHandlers: Record<number, ErrorHandler> = {
     console.log("Unauthenticated. Make sure you are signed in.");
     return Promise.resolve({
       data: null,
-      hasErrors: true,
+      has_errors: true,
       errors: [
         {
           property: "",
@@ -97,12 +97,18 @@ function remove<T>(route: string) {
   return axiosInstance.delete<T>(url, { withCredentials: true });
 }
 
+function patchnd<T>(route: string) {
+  var url = baseurl + route;
+  return axiosInstance.patch<T>(url, null, { withCredentials: true });
+}
+
 type Api = {
   post<T>(route: string, data?: any): Promise<AxiosResponse<T>>;
   get<T>(url: string): Promise<AxiosResponse<T>>;
   delete<T>(route: string): Promise<AxiosResponse<T>>;
   put<T>(route: string, data: any): Promise<AxiosResponse<T>>;
   patch<T>(route: string, data: any): Promise<AxiosResponse<T>>;
+  patchnd<T>(route: string): Promise<AxiosResponse<T>>;
 };
 
 const api = {} as Api;
@@ -112,5 +118,6 @@ api.put = put;
 api.patch = patch;
 api.post = post;
 api.delete = remove;
+api.patchnd = patchnd;
 
 export default api;

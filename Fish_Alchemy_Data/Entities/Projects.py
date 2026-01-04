@@ -39,6 +39,7 @@ class ProjectShallowDto(BaseModel):
     id: int
     name: str
     logo_path: str
+    lead: UserShallowDto
 
 class Project(Base):
     __tablename__ = 'projects'
@@ -78,5 +79,5 @@ class Project(Base):
         return projectdto
     
     def toShallowDto(self) -> ProjectShallowDto:
-        projectdto = ProjectShallowDto(id=self.id, name=self.name, logo_path=self.logo_path)
+        projectdto = ProjectShallowDto(id=self.id, name=self.name, logo_path=self.logo_path, lead=self.lead.toShallowDto())
         return projectdto

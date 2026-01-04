@@ -1,6 +1,5 @@
 import {
   Card,
-  Text,
   Title,
   Paper,
   ScrollArea,
@@ -19,12 +18,16 @@ interface KanbanColumnProps {
   id: string;
   title: string;
   tickets: TicketShallowDto[];
+  onTicketUpdate: (updatedTicket: TicketShallowDto) => void;
+  onTicketDelete: (toDelete: TicketShallowDto) => void;
 }
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   id,
   title,
   tickets,
+  onTicketUpdate,
+  onTicketDelete,
 }) => {
   const { setNodeRef } = useDroppable({ id: id });
   const { colorScheme } = useMantineColorScheme();
@@ -46,16 +49,18 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         <ScrollArea overscrollBehavior="contain" h="calc(100vh - 475px)">
           {/* <ScrollArea overscrollBehavior="contain" h="100%"> */}
           <SortableContext
-            items={tickets.map((ticket) => ticket.id)}
+            items={tickets.map((ticket) => ticket.ticketnum)!}
             strategy={verticalListSortingStrategy}
           >
-            {tickets.map((ticket) => {
+            {tickets?.map((ticket) => {
               return (
                 <TicketDraggable
                   key={ticket.ticketnum}
                   id={ticket.ticketnum}
                   ticket={ticket}
                   overlay={false}
+                  onUpdate={(updatedTicket) => onTicketUpdate(updatedTicket)}
+                  onDelete={(toDelete) => onTicketDelete(toDelete)}
                 />
               );
             })}

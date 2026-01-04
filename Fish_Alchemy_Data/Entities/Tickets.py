@@ -42,8 +42,10 @@ class TicketShallowDto(BaseModel):
     description: str
     ticketnum: int
     state: TicketState
+    github_url: str
     created_at: datetime
     duedate: datetime
+    projectid: int
     projectname: str
     user: UserShallowDto
 
@@ -86,8 +88,10 @@ class Ticket(Base):
             description=self.description,
             ticketnum=self.ticketnum,
             state=self.state,
+            github_url=self.github_url,
             created_at=self.created_at,
             duedate=self.duedate,
+            projectid=self.project.id,
             projectname=self.project.name,
             user=self.user.toShallowDto()
         )

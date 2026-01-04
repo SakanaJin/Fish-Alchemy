@@ -109,6 +109,7 @@ export interface ProjectShallowDto {
   id: number;
   name: string;
   logo_path: string;
+  lead: UserShallowDto;
 }
 
 //ticket types -------------------------------------------------------------------------------------
@@ -159,8 +160,10 @@ export interface TicketShallowDto {
   description: string;
   ticketnum: number;
   state: TicketState;
+  github_url: string;
   created_at: string;
   duedate: string;
+  projectid: number;
   projectname: string;
   user: UserShallowDto;
 }

@@ -1,6 +1,6 @@
 import type React from "react";
 import { EnvVars } from "../config/env-vars";
-import type { TicketShallowDto } from "../constants/types";
+import { type TicketShallowDto } from "../constants/types";
 import { useSortable } from "@dnd-kit/sortable";
 import {
   Text,
@@ -12,6 +12,8 @@ import {
   Avatar,
   HoverCard,
   ScrollArea,
+  Anchor,
+  Flex,
 } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGrip } from "@fortawesome/free-solid-svg-icons";
@@ -20,11 +22,14 @@ import type { UniqueIdentifier } from "@dnd-kit/core";
 import { TicketBadge } from "./ticket-badge";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../routes/RouteIndex";
+import { modals } from "@mantine/modals";
 
 export interface TicketDraggableProps {
   ticket: TicketShallowDto;
   id: UniqueIdentifier;
   overlay: boolean;
+  onUpdate?: (updatedTicket: TicketShallowDto) => void;
+  onDelete?: (toDelete: TicketShallowDto) => void;
 }
 
 const baseurl = EnvVars.apiBaseUrl;
@@ -33,6 +38,8 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
   ticket,
   id,
   overlay,
+  onUpdate,
+  onDelete,
 }) => {
   const {
     attributes,
@@ -63,39 +70,69 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
       <Card.Section
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
         }}
         p="sm"
       >
-        <HoverCard shadow="sm" openDelay={250}>
-          <HoverCard.Target>
-            <Title lineClamp={1}>{ticket.name}</Title>
-          </HoverCard.Target>
-          <HoverCard.Dropdown>
-            <Text>{ticket.name}</Text>
-          </HoverCard.Dropdown>
-        </HoverCard>
+        <Flex direction="column">
+          <HoverCard shadow="sm" openDelay={250}>
+            <HoverCard.Target>
+              <Title
+                lineClamp={1}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  modals.openContextModal({
+                    modal: "updatedeleteticket",
+                    title: "Update Ticket",
+                    centered: true,
+                    innerProps: {
+                      onDelete: (toDelete: TicketShallowDto) =>
+                        onDelete ? onDelete(toDelete) : {},
+                      onSubmit: (updatedTicket: TicketShallowDto) =>
+                        onUpdate ? onUpdate(updatedTicket) : {},
+
+                      ticket: ticket!,
+                    },
+                  });
+                }}
+              >
+                {ticket?.name}
+              </Title>
+            </HoverCard.Target>
+            <HoverCard.Dropdown>
+              <Text>{ticket?.name}</Text>
+            </HoverCard.Dropdown>
+          </HoverCard>
+          <Text size="xs">Date Created: {ticket?.created_at}</Text>
+          <Text size="xs">Due Date: {ticket?.duedate}</Text>
+        </Flex>
         <HoverCard shadow="sm" openDelay={250}>
           <HoverCard.Target>
             <Avatar
-              src={baseurl + ticket.user.pfp_path}
+              src={baseurl + ticket?.user.pfp_path!}
               style={{ cursor: "pointer" }}
               onClick={() =>
-                navigate(routes.user.replace(":id", `${ticket.user.id}`))
+                navigate(routes.user.replace(":id", `${ticket?.user.id}`))
               }
             />
           </HoverCard.Target>
           <HoverCard.Dropdown>
-            <Text>{ticket.user.username}</Text>
+            <Text>{ticket?.user.username}</Text>
           </HoverCard.Dropdown>
         </HoverCard>
       </Card.Section>
       <Space h="sm" />
       <ScrollArea overscrollBehavior="contain" h="5em">
-        <Text style={{ whiteSpace: "pre-wrap" }}>{ticket.description}</Text>
+        <Text style={{ whiteSpace: "pre-wrap" }}>{ticket?.description}</Text>
       </ScrollArea>
-      <Space h="sm" />
+      {ticket?.github_url ? (
+        <Anchor href={ticket?.github_url} size="sm" truncate="end">
+          {ticket.github_url}
+        </Anchor>
+      ) : (
+        <Space h="lg" />
+      )}
       <Card.Section
         withBorder
         py="sm"
@@ -108,7 +145,7 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
           marginRight: "5px",
         }}
       >
-        <Text>#{ticket.ticketnum}</Text>
+        <Text>#{ticket?.ticketnum}</Text>
         <UnstyledButton
           ref={setActivatorNodeRef}
           {...listeners}
@@ -126,7 +163,7 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
         >
           <FontAwesomeIcon icon={faGrip} />
         </UnstyledButton>
-        <TicketBadge state={ticket.state} />
+        <TicketBadge state={ticket?.state!} />
       </Card.Section>
       {isDragging && (
         <Overlay color="var(--mantine-color-body)" backgroundOpacity={0.85} />
