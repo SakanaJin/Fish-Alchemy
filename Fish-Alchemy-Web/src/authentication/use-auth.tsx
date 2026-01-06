@@ -8,17 +8,6 @@ import { StatusCodes } from "../constants/status-codes";
 import { Loader } from "@mantine/core";
 import api from "../config/axios";
 
-// const currentUser = "currentUser";
-
-//functions for setting session storage
-// const setUserItem = (user: UserGetDto) => {
-//   sessionStorage.setItem(currentUser, JSON.stringify(mapUser(user)));
-// };
-
-// const removeUserItem = () => {
-//   sessionStorage.removeItem(currentUser);
-// };
-
 type AuthState = {
   user: UserGetDto | null;
   errors: ApiError[];
@@ -46,7 +35,7 @@ export const AuthProvider = (props: any) => {
       `/api/auth/get-current-user`
     );
 
-    if (response.data.hasErrors) {
+    if (response.data.has_errors) {
       response.data.errors.forEach((err) => {
         console.error(err.message);
       });
@@ -70,7 +59,6 @@ export const AuthProvider = (props: any) => {
     console.log("Successfully Logged Out!");
 
     if (response.status === StatusCodes.OK) {
-      // removeUserItem();
       setUser(null);
     }
 
