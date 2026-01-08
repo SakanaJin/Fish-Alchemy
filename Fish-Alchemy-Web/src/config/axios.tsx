@@ -3,6 +3,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
 import type { ApiResponse } from "../constants/types";
 import { EnvVars } from "./env-vars";
+import type { FileWithPath } from "@mantine/dropzone";
 
 const baseurl = EnvVars.apiBaseUrl;
 
@@ -102,6 +103,13 @@ function patchnd<T>(route: string) {
   return axiosInstance.patch<T>(url, null, { withCredentials: true });
 }
 
+function patchf<T>(route: string, file: FileWithPath) {
+  var url = baseurl + route;
+  const formData = new FormData();
+  formData.append("file", file);
+  return axiosInstance.patch<T>(url, formData, { withCredentials: true });
+}
+
 type Api = {
   post<T>(route: string, data?: any): Promise<AxiosResponse<T>>;
   get<T>(url: string): Promise<AxiosResponse<T>>;
@@ -109,6 +117,7 @@ type Api = {
   put<T>(route: string, data: any): Promise<AxiosResponse<T>>;
   patch<T>(route: string, data: any): Promise<AxiosResponse<T>>;
   patchnd<T>(route: string): Promise<AxiosResponse<T>>;
+  patchf<T>(route: string, file: FileWithPath): Promise<AxiosResponse<T>>;
 };
 
 const api = {} as Api;
@@ -119,5 +128,6 @@ api.patch = patch;
 api.post = post;
 api.delete = remove;
 api.patchnd = patchnd;
+api.patchf = patchf;
 
 export default api;

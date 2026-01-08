@@ -1,6 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/dates/styles.css";
+import "@mantine/dropzone/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
@@ -9,10 +10,12 @@ import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App.tsx";
 import { TicketCreateModalForm } from "./components/ticket-create-modal.tsx";
 import { TicketUpdateDeleteModal } from "./components/ticket-update-delete-modal.tsx";
+import { ImageUploadModal } from "./components/image-upload-modal.tsx";
 
 const modals = {
   createticket: TicketCreateModalForm,
   updatedeleteticket: TicketUpdateDeleteModal,
+  uploadimage: ImageUploadModal,
 };
 declare module "@mantine/modals" {
   export interface MantineModalsOverride {

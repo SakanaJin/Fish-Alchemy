@@ -227,16 +227,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         message: "Error changing ticket state",
         color: "red",
       });
-      //this literally does not work
       setColumns((columns) => {
         const next = structuredClone(columns);
-        const column = next.find((column) => column.state === ticket.state)!;
+        const badcolumn = next.find((column) => column.state === state)!;
+        const goodcolumn = next.find(
+          (column) => column.state === ticket.state
+        )!;
 
-        const oldIndex = column.tickets.findIndex(
+        const badIndex = badcolumn.tickets.findIndex(
           (tick) => tick.id === ticket.id
         );
 
-        column.tickets = arrayMove(column.tickets, oldIndex, 0);
+        const [ticketMove] = badcolumn.tickets.splice(badIndex, 1);
+        goodcolumn.tickets.push(ticketMove);
         return next;
       });
     }

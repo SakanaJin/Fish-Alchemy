@@ -31,6 +31,7 @@ import {
   faArrowDown,
   faArrowUp,
   faCalendarDays,
+  faCamera,
   faFilter,
   faFlask,
   faHashtag,
@@ -45,6 +46,9 @@ import {
 import { KanbanBoard } from "../../components/kanban-board";
 import { TicketBadge } from "../../components/ticket-badge";
 import { modals } from "@mantine/modals";
+import { useUser } from "../../authentication/use-auth";
+import { AvatarOverlay } from "../../components/avatar-overlay";
+import { openImageUploadModal } from "../../components/image-upload-modal";
 
 const baseurl = EnvVars.apiBaseUrl;
 const sideMargin = "100px";
@@ -56,6 +60,8 @@ export const ProjectPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [ascending, setAscending] = useState(true);
+  const user = useUser();
+  const [isLead, setIsLead] = useState(false);
   const filteredTickets = useMemo(() => {
     if (!search.trim()) return project?.tickets;
 
@@ -183,6 +189,7 @@ export const ProjectPage = () => {
 
     if (response.data.data) {
       setProject(response.data.data);
+      setIsLead(response.data.data.lead.id === user.id);
       setLoading(false);
     }
   };
@@ -199,9 +206,24 @@ export const ProjectPage = () => {
       }}
     >
       <Skeleton visible={loading}>
-        <Flex direction="row" h="10rem">
+        <Flex direction="row" h="12rem">
           <Flex direction="column" miw="15rem">
-            <Avatar src={baseurl + project?.logo_path!} size="80" />
+            <AvatarOverlay
+              src={baseurl + project?.logo_path!}
+              size="80"
+              overlay={isLead}
+              onClick={() => {
+                isLead
+                  ? openImageUploadModal<ProjectGetDto>({
+                      apiurl: `/api/projects/${project?.id}/logo`,
+                      onUpload: (updatedProject: ProjectGetDto) =>
+                        setProject(updatedProject),
+                    })
+                  : {};
+              }}
+            >
+              <FontAwesomeIcon icon={faCamera} />
+            </AvatarOverlay>
             <HoverCard shadow="sm" openDelay={250}>
               <HoverCard.Target>
                 <Title lineClamp={1}>{project?.name}</Title>
@@ -280,7 +302,7 @@ export const ProjectPage = () => {
             transform: "none",
           }}
         >
-          <Flex h="calc(100vh - 320px)">
+          <Flex h="calc(100vh - 350px)">
             {project?.tickets && (
               <KanbanBoard tickets={project.tickets} projectid={project.id} />
             )}

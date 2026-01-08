@@ -46,7 +46,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         style={{ height: "100%" }}
         bg={dark ? "var(--mantine-color-body)" : "var(--mantine-color-gray-1)"}
       >
-        <ScrollArea overscrollBehavior="contain" h="calc(100vh - 475px)">
+        <ScrollArea overscrollBehavior="contain" h="calc(100vh - 500px)">
           {/* <ScrollArea overscrollBehavior="contain" h="100%"> */}
           <SortableContext
             items={tickets.map((ticket) => ticket.ticketnum)!}
