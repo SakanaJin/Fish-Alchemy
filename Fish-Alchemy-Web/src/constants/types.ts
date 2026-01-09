@@ -56,6 +56,7 @@ export interface GroupGetDto {
   name: string;
   logo_path: string;
   banner_path: string;
+  creator: UserShallowDto;
   users: UserShallowDto[];
   projects: ProjectShallowDto[];
 }

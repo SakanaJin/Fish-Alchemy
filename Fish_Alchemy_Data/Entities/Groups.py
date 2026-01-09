@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 
 from Fish_Alchemy_Data.database import Base
+from Fish_Alchemy_Data.Entities.Users import UserShallowDto
 
 DEFAULT_LOGO = "/media/group/logo/default.png"
 DEFAULT_BANNER = "/media/group/banner/default.png"
@@ -18,6 +19,7 @@ class GroupGetDto(BaseModel):
     name: str
     logo_path: str
     banner_path: str
+    creator: UserShallowDto
     users: list
     projects: list
 
@@ -36,12 +38,16 @@ class Group(Base):
     users = relationship("User", secondary='user_group', back_populates='groups')
     projects = relationship("Project", back_populates="group", cascade="all, delete-orphan")
 
+    creator_id = Column(Integer, ForeignKey("users.id"))
+    creator = relationship("User")
+
     def toGetDto(self) -> GroupGetDto:
         groupgetdto = GroupGetDto(
             id=self.id, 
             name=self.name, 
             logo_path=self.logo_path, 
             banner_path=self.banner_path, 
+            creator=self.creator.toShallowDto(),
             users=[user.toShallowDto() for user in self.users], 
             projects=[project.toShallowDto() for project in self.projects]
         )

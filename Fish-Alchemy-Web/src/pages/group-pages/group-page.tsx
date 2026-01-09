@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { EnvVars } from "../../config/env-vars";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
-  ProjectShallowDto,
-  UserShallowDto,
   ApiResponse,
   GroupGetDto,
+  ProjectGetDto,
+  ProjectShallowDto,
 } from "../../constants/types";
 import api from "../../config/axios";
 import { notifications } from "@mantine/notifications";
@@ -16,7 +16,6 @@ import {
   Avatar,
   Title,
   Tabs,
-  ScrollArea,
   Space,
   TextInput,
   Paper,
@@ -24,43 +23,79 @@ import {
   Card,
   Group,
   useMantineColorScheme,
+  Flex,
+  ActionIcon,
+  Text,
+  Overlay,
 } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faCamera,
+  faPlus,
   faSailboat,
   faSearch,
+  faTrash,
   faWater,
 } from "@fortawesome/free-solid-svg-icons";
 import { routes } from "../../routes/RouteIndex";
+import { useUser } from "../../authentication/use-auth";
+import { modals } from "@mantine/modals";
+import { AvatarOverlay } from "../../components/avatar-overlay";
+import { openImageUploadModal } from "../../components/image-upload-modal";
+import { useHover } from "@mantine/hooks";
 
 const baseurl = EnvVars.apiBaseUrl;
 const sideMargin = "100px";
 
 export const GroupPage = () => {
+  const { hovered, ref } = useHover();
+  const user = useUser();
   const { id } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState<GroupGetDto>();
   const [loading, setLoading] = useState(true);
-  const [projectsFiltered, setProjectsFiltered] =
-    useState<ProjectShallowDto[]>();
-  const [usersFiltered, setUsersFiltered] = useState<UserShallowDto[]>();
   const { colorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
-
-  const handleProjectsChange = (search: string) => {
-    setProjectsFiltered(
-      group?.projects.filter((project) => {
-        return project.name.toLowerCase().includes(search.toLowerCase());
-      })
+  const [isOwner, setIsOwner] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [projectSearch, setProjectSearch] = useState("");
+  const usersFiltered = useMemo(() => {
+    if (!userSearch.trim()) return group?.users;
+    return group?.users.filter((user) =>
+      user.username.toLowerCase().includes(userSearch.toLowerCase())
     );
+  }, [group, userSearch]);
+  const projectsFiltered = useMemo(() => {
+    if (!projectSearch.trim()) return group?.projects;
+    return group?.projects.filter((project) =>
+      project.name.toLowerCase().includes(projectSearch.toLowerCase())
+    );
+  }, [group, projectSearch]);
+
+  const addProject = (newProject: ProjectShallowDto) => {
+    setGroup((group) => {
+      if (!group) return undefined;
+      group.projects.push(newProject);
+      return group;
+    });
   };
 
-  const handleUsersChange = (search: string) => {
-    setUsersFiltered(
-      group?.users.filter((user) => {
-        return user.username.toLowerCase().includes(search.toLowerCase());
-      })
+  const removeUser = async (userid: number) => {
+    const response = await api.delete<ApiResponse<GroupGetDto>>(
+      `/api/groups/${group?.id}/user/${userid}`
     );
+
+    if (response.data.has_errors) {
+      notifications.show({
+        title: "Error",
+        message: "Error removing user",
+        color: "red",
+      });
+    }
+
+    if (response.data.data) {
+      setGroup(response.data.data);
+    }
   };
 
   const fetchGroup = async () => {
@@ -78,8 +113,7 @@ export const GroupPage = () => {
 
     if (response.data.data) {
       setGroup(response.data.data);
-      setProjectsFiltered(response.data.data.projects);
-      setUsersFiltered(response.data.data.users);
+      setIsOwner(response.data.data.creator.id === user.id);
       setLoading(false);
     }
   };
@@ -92,7 +126,35 @@ export const GroupPage = () => {
     <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>
       <Skeleton visible={loading}>
         <AspectRatio ratio={7}>
-          <Image src={baseurl + group?.banner_path!} radius="md" />
+          <Image
+            src={baseurl + group?.banner_path!}
+            radius="md"
+            ref={ref}
+            style={{ cursor: isOwner ? "pointer" : "default" }}
+            onClick={() => {
+              isOwner
+                ? openImageUploadModal<GroupGetDto>({
+                    apiurl: `/api/groups/${group?.id}/banner`,
+                    onUpload: (updatedGroup: GroupGetDto) =>
+                      setGroup(updatedGroup),
+                  })
+                : {};
+            }}
+          />
+          {isOwner && hovered && (
+            <Overlay
+              style={{
+                zIndex: 9,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                pointerEvents: "none",
+              }}
+            >
+              <FontAwesomeIcon icon={faCamera} size="8x" />
+            </Overlay>
+          )}
           <Avatar
             size="100"
             style={{
@@ -103,13 +165,58 @@ export const GroupPage = () => {
             color="var(--mantine-color-body)"
             bg="var(--mantine-color-body)"
           >
-            <Avatar src={baseurl + group?.logo_path!} size="80" />{" "}
+            <AvatarOverlay
+              src={baseurl + group?.logo_path!}
+              size="80"
+              overlay={isOwner}
+              onClick={() => {
+                isOwner
+                  ? openImageUploadModal<GroupGetDto>({
+                      apiurl: `/api/groups/${group?.id}/logo`,
+                      onUpload: (updatedGroup: GroupGetDto) =>
+                        setGroup(updatedGroup),
+                    })
+                  : {};
+              }}
+            >
+              <FontAwesomeIcon icon={faCamera} />
+            </AvatarOverlay>
           </Avatar>
         </AspectRatio>
       </Skeleton>
-      <Title style={{ transform: "translateY(-35px)", marginLeft: "30px" }}>
-        {group?.name}
-      </Title>
+      {isOwner ? (
+        <Title
+          style={{
+            transform: "translateY(-35px)",
+            marginLeft: "30px",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            modals.openContextModal({
+              modal: "updatedeletegroup",
+              title: "Update Group",
+              centered: true,
+              innerProps: {
+                group: group!,
+                onDelete: () =>
+                  navigate(routes.user.replace(":id", `${user.id}`)),
+                onSubmit: (updatedGroup) => setGroup(updatedGroup),
+              },
+            });
+          }}
+        >
+          {group?.name}
+        </Title>
+      ) : (
+        <Title
+          style={{
+            transform: "translateY(-35px)",
+            marginLeft: "30px",
+          }}
+        >
+          {group?.name}
+        </Title>
+      )}
       <Tabs defaultValue="projects">
         <Tabs.List>
           <Tabs.Tab
@@ -125,105 +232,176 @@ export const GroupPage = () => {
             Users
           </Tabs.Tab>
         </Tabs.List>
-        <ScrollArea offsetScrollbars overscrollBehavior="contain">
-          <Tabs.Panel value="projects">
-            <Space h="sm" />
+        <Tabs.Panel value="projects">
+          <Flex pt="sm" align="center">
             <TextInput
               placeholder="search"
-              onChange={(event) =>
-                handleProjectsChange(event.currentTarget.value)
-              }
+              onChange={(event) => setProjectSearch(event.currentTarget.value)}
               leftSection={<FontAwesomeIcon icon={faSearch} />}
+              style={{ flexGrow: 1 }}
             />
-            {projectsFiltered?.map((project) => {
-              return (
-                <>
-                  <Space h="lg" />
-                  <Paper
-                    withBorder
-                    shadow="sm"
-                    p="xl"
-                    onClick={() =>
-                      navigate(
-                        routes.projectPage.replace(":id", `${project.id}`)
-                      )
-                    }
-                    style={{ cursor: "pointer" }}
+            {isOwner && (
+              <>
+                <Space w="sm" />
+                <ActionIcon
+                  variant="default"
+                  h="36px"
+                  w="36px"
+                  onClick={() => {
+                    modals.openContextModal({
+                      modal: "createproject",
+                      title: "Create Project",
+                      centered: true,
+                      innerProps: {
+                        groupid: group?.id!,
+                        onSubmit: (newProject: ProjectGetDto) =>
+                          addProject({ ...newProject }),
+                      },
+                    });
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </ActionIcon>
+              </>
+            )}
+          </Flex>
+          {projectsFiltered?.map((project) => {
+            return (
+              <>
+                <Space h="sm" />
+                <Paper
+                  withBorder
+                  shadow="sm"
+                  p="xl"
+                  onClick={() =>
+                    navigate(routes.projectPage.replace(":id", `${project.id}`))
+                  }
+                  style={{ cursor: "pointer" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
+                    <Avatar
+                      src={baseurl + project.logo_path}
+                      size="lg"
+                    ></Avatar>
+                    <Title style={{ paddingLeft: "20px" }}>
+                      {project.name}
+                    </Title>
+                  </div>
+                </Paper>
+              </>
+            );
+          })}
+        </Tabs.Panel>
+        <Tabs.Panel value="users">
+          <Flex pt="sm" align="center">
+            <TextInput
+              placeholder="search"
+              onChange={(event) => setUserSearch(event.currentTarget.value)}
+              leftSection={<FontAwesomeIcon icon={faSearch} />}
+              style={{ flexGrow: 1 }}
+            />
+            {isOwner && (
+              <>
+                <Space w="sm" />
+                <ActionIcon
+                  variant="default"
+                  h="36px"
+                  w="36px"
+                  onClick={() => {
+                    modals.openContextModal({
+                      modal: "adduser",
+                      title: "Add User",
+                      centered: true,
+                      innerProps: {
+                        groupid: group?.id!,
+                        onSubmit: (updatedGroup) => {
+                          setGroup(updatedGroup);
+                        },
+                      },
+                    });
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </ActionIcon>
+              </>
+            )}
+          </Flex>
+          <SimpleGrid cols={5} verticalSpacing="lg" spacing="lg" pt="sm">
+            {usersFiltered?.map((cuser) => {
+              return (
+                <Card withBorder shadow="sm">
+                  <Card.Section>
+                    <Image src={baseurl + cuser.banner_path} height={160} />
+                  </Card.Section>
+                  <Group
+                    style={{
+                      zIndex: 10,
+                      transform: "translateY(-35px)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Avatar
+                      size="100"
+                      style={{ cursor: "pointer" }}
+                      onClick={() =>
+                        navigate(routes.user.replace(":id", `${cuser.id}`))
+                      }
+                      color={
+                        dark
+                          ? "var(--mantine-color-dark-6)"
+                          : "var(--mantine-color-white)"
+                      }
+                      bg={
+                        dark
+                          ? "var(--mantine-color-dark-6)"
+                          : "var(--mantine-color-white)"
+                      }
                     >
-                      <Avatar
-                        src={baseurl + project.logo_path}
-                        size="lg"
-                      ></Avatar>
-                      <Title style={{ paddingLeft: "20px" }}>
-                        {project.name}
-                      </Title>
-                    </div>
-                  </Paper>
-                </>
+                      <Avatar src={baseurl + cuser.pfp_path} size="80" />
+                    </Avatar>
+                    <Title>{cuser.username}</Title>
+                  </Group>
+                  {isOwner && user.id !== cuser.id && (
+                    <Card.Section
+                      style={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <ActionIcon
+                        variant="transparent"
+                        color="red"
+                        onClick={() => {
+                          modals.openConfirmModal({
+                            title: "Confirm Delete",
+                            centered: true,
+                            children: (
+                              <Text>
+                                Are you sure you want to remove the user{" "}
+                                {cuser.username}?
+                              </Text>
+                            ),
+                            labels: { confirm: "Confirm", cancel: "Cancel" },
+                            confirmProps: { color: "red" },
+                            onCancel: () => {},
+                            onConfirm: () => removeUser(cuser.id),
+                          });
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </ActionIcon>
+                    </Card.Section>
+                  )}
+                </Card>
               );
             })}
-          </Tabs.Panel>
-          <Tabs.Panel value="users">
-            <Space h="sm" />
-            <TextInput
-              placeholder="search"
-              onChange={(event) => handleUsersChange(event.currentTarget.value)}
-              leftSection={<FontAwesomeIcon icon={faSearch} />}
-            />
-            <Space h="lg" />
-            <SimpleGrid cols={5} verticalSpacing="lg" spacing="lg">
-              {usersFiltered?.map((user) => {
-                return (
-                  <Card
-                    withBorder
-                    shadow="sm"
-                    onClick={() =>
-                      navigate(routes.user.replace(":id", `${user.id}`))
-                    }
-                    style={{ cursor: "pointer" }}
-                  >
-                    <Card.Section>
-                      <Image src={baseurl + user.banner_path} height={160} />
-                    </Card.Section>
-                    <Group
-                      style={{
-                        zIndex: 10,
-                        transform: "translateY(-35px)",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Avatar
-                        size="100"
-                        color={
-                          dark
-                            ? "var(--mantine-color-dark-6)"
-                            : "var(--mantine-color-white)"
-                        }
-                        bg={
-                          dark
-                            ? "var(--mantine-color-dark-6)"
-                            : "var(--mantine-color-white)"
-                        }
-                      >
-                        <Avatar src={baseurl + user.pfp_path} size="80" />
-                      </Avatar>
-                      <Title>{user.username}</Title>
-                    </Group>
-                  </Card>
-                );
-              })}
-            </SimpleGrid>
-          </Tabs.Panel>
-        </ScrollArea>
+          </SimpleGrid>
+        </Tabs.Panel>
       </Tabs>
     </div>
   );

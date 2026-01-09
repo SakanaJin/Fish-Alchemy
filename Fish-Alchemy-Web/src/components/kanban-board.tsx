@@ -39,11 +39,13 @@ import { modals } from "@mantine/modals";
 interface KanbanBoardProps {
   tickets?: TicketShallowDto[];
   projectid: number;
+  isLead: boolean;
 }
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   tickets,
   projectid,
+  isLead,
 }) => {
   const initialColumns: ColumnType[] = [
     {
@@ -401,24 +403,26 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
-          <ActionIcon
-            variant="default"
-            h="36px"
-            w="36px"
-            onClick={() => {
-              modals.openContextModal({
-                modal: "createticket",
-                title: "Create Ticket",
-                centered: true,
-                innerProps: {
-                  projectid: projectid,
-                  onSubmit: (newTicket) => addNewTicket(newTicket),
-                },
-              });
-            }}
-          >
-            <FontAwesomeIcon icon={faPlus} />
-          </ActionIcon>
+          {isLead && (
+            <ActionIcon
+              variant="default"
+              h="36px"
+              w="36px"
+              onClick={() => {
+                modals.openContextModal({
+                  modal: "createticket",
+                  title: "Create Ticket",
+                  centered: true,
+                  innerProps: {
+                    projectid: projectid,
+                    onSubmit: (newTicket) => addNewTicket(newTicket),
+                  },
+                });
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </ActionIcon>
+          )}
         </ActionIcon.Group>
       </Flex>
       <DndContext

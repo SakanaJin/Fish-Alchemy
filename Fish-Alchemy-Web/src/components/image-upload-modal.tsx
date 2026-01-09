@@ -46,7 +46,7 @@ export function ImageUploadModal({
 
     if (response.data.data) {
       innerProps.onUpload(response.data.data);
-      context.closeModal(id);
+      context.closeAll();
     }
   };
 

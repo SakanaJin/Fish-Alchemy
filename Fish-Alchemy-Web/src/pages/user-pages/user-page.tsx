@@ -221,7 +221,6 @@ export const UserPage = () => {
           })}
         </Tabs.Panel>
         <Tabs.Panel value="tickets">
-          <Space h="sm" />
           <Flex pt="sm" align="center">
             <TextInput
               placeholder="search"

@@ -23,13 +23,14 @@ def create_group(groupdto: GroupCreateDto, db: Session = Depends(get_db), userdt
     group = Group(name = groupdto.name)
     user = db.query(User).filter(User.id == userdto.id).first()
     group.users.append(user)
+    group.creator = user
     db.add(group)
     db.commit()
     response.data=group.toGetDto()
     return response
 
 @router.patch("/{id}/name")
-def update_name(groupdto: GroupUpdateDto, id: int, db: Session = Depends(get_db)):
+def update_name(groupdto: GroupUpdateDto, id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
@@ -38,12 +39,15 @@ def update_name(groupdto: GroupUpdateDto, id: int, db: Session = Depends(get_db)
         response.add_error("name", "name cannot be empty")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
+    if user.id != group.creator.id:
+        response.add_error("user", "only creator can update group")
+        raise HttpException(status_code=403, response=response)
     group.name = groupdto.name
     response.data = group.toGetDto()
     return response
 
 @router.post("/{groupId}/user/{userId}")
-def add_user(groupId: int, userId: int, db: Session = Depends(get_db)):
+def add_user(groupId: int, userId: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == groupId, Group.users.any(User.id != userId)).first()
     user = db.query(User).filter(User.id == userId).first()
@@ -53,13 +57,19 @@ def add_user(groupId: int, userId: int, db: Session = Depends(get_db)):
         response.add_error("id", "user not found")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can add users")
+    if user in group.users:
+        response.add_error("user", "user already in group")
+    if response.has_errors:
+        raise HttpException(status_code=400, response=response)
     group.users.append(user)
     db.commit()
     response.data = group.toGetDto()
     return response
 
 @router.delete("/{groupId}/user/{userId}")
-def remove_user(groupId: int, userId: int, db: Session = Depends(get_db)):
+def remove_user(groupId: int, userId: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == groupId, Group.users.any(User.id == userId)).first()
     user = db.query(User).filter(User.id == userId).first()
@@ -71,6 +81,9 @@ def remove_user(groupId: int, userId: int, db: Session = Depends(get_db)):
         raise HttpException(status_code=400, response=response)
     if len(group.users) == 1:
         response.add_error("user", "cannot have a group with no users")
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can remove user")
+    if response.has_errors:
         raise HttpException(status_code=400, response=response)
     group.users.remove(user)
     db.commit()
@@ -95,7 +108,7 @@ def get_by_id(id: int, db: Session = Depends(get_db)):
     return response
 
 @router.patch("/{id}/logo")
-async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
@@ -104,6 +117,9 @@ async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depen
         response.add_error("File", "File must be an image")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can update logo")
+        raise HttpException(status_code=403, response=response)
     extension = file.filename.split(".")[-1]
     filename = f"{uuid.uuid4()}.{extension}"
     cwd = os.getcwd()
@@ -118,7 +134,7 @@ async def update_logo(id: int, file: UploadFile = File(...), db: Session = Depen
     return response
 
 @router.patch("/{id}/banner")
-async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def update_banner(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
@@ -127,6 +143,9 @@ async def update_banner(id: int, file: UploadFile = File(...), db: Session = Dep
         response.add_error("File", "File must be an image")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can update banner")
+        raise HttpException(status_code=403, response=response)
     extension = file.filename.split(".")[-1]
     filename = f"{uuid.uuid4()}.{extension}"
     cwd = os.getcwd()
@@ -141,7 +160,7 @@ async def update_banner(id: int, file: UploadFile = File(...), db: Session = Dep
     return response 
 
 @router.delete("/{id}/logo")
-def remove_logo(id: int, db: Session = Depends(get_db)):
+def remove_logo(id: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
@@ -150,6 +169,9 @@ def remove_logo(id: int, db: Session = Depends(get_db)):
     if group.logo_path == DEFAULT_LOGO:
         response.add_error("logo", "no logo")
         raise HttpException(status_code=400, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can remove logo")
+        raise HttpException(status_code=403, response=response)
     cwd = os.getcwd()
     os.remove(os.path.join(cwd, group.logo_path[1:]))
     group.logo_path = DEFAULT_LOGO
@@ -158,7 +180,7 @@ def remove_logo(id: int, db: Session = Depends(get_db)):
     return response
 
 @router.delete("/{id}/banner")
-def remove_banner(id: int, db: Session = Depends(get_db)):
+def remove_banner(id: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
@@ -166,6 +188,9 @@ def remove_banner(id: int, db: Session = Depends(get_db)):
     if group.banner_path == DEFAULT_BANNER:
         response.add_error("banner", "no banner")
         raise HttpException(status_code=400, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can remove banner")
+        raise HttpException(status_code=403, response=response)
     cwd = os.getcwd()
     os.remove(os.path.join(cwd, group.banner_path[1:]))
     group.banner_path = DEFAULT_BANNER
@@ -174,12 +199,15 @@ def remove_banner(id: int, db: Session = Depends(get_db)):
     return response
 
 @router.delete("/{id}")
-def delete_group(id: int, db: Session = Depends(get_db)):
+def delete_group(id: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     group = db.query(Group).filter(Group.id == id).first()
     if not group:
         response.add_error("id", "group not found")
         raise HttpException(status_code=404, response=response)
+    if authedUser.id != group.creator.id:
+        response.add_error("user", "Only creator can delete group")
+        raise HttpException(status_code=403, response=response)
     db.delete(group)
     db.commit()
     response.data = True

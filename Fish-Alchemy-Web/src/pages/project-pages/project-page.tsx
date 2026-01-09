@@ -61,7 +61,9 @@ export const ProjectPage = () => {
   const [search, setSearch] = useState("");
   const [ascending, setAscending] = useState(true);
   const user = useUser();
-  const [isLead, setIsLead] = useState(false);
+  const isLead = useMemo(() => {
+    return project ? user.id === project.lead.id : false;
+  }, [project]);
   const filteredTickets = useMemo(() => {
     if (!search.trim()) return project?.tickets;
 
@@ -189,7 +191,6 @@ export const ProjectPage = () => {
 
     if (response.data.data) {
       setProject(response.data.data);
-      setIsLead(response.data.data.lead.id === user.id);
       setLoading(false);
     }
   };
@@ -226,7 +227,36 @@ export const ProjectPage = () => {
             </AvatarOverlay>
             <HoverCard shadow="sm" openDelay={250}>
               <HoverCard.Target>
-                <Title lineClamp={1}>{project?.name}</Title>
+                {isLead ? (
+                  <Title
+                    lineClamp={1}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      modals.openContextModal({
+                        modal: "updatedeleteproject",
+                        title: "Update Project",
+                        centered: true,
+                        innerProps: {
+                          project: project!,
+                          onSubmit: (updatedProject) => {
+                            setProject(updatedProject);
+                          },
+                          onDelete: () =>
+                            navigate(
+                              routes.groupPage.replace(
+                                ":id",
+                                `${project?.group.id}`
+                              )
+                            ),
+                        },
+                      });
+                    }}
+                  >
+                    {project?.name}
+                  </Title>
+                ) : (
+                  <Title lineClamp={1}>{project?.name}</Title>
+                )}
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Text>{project?.name}</Text>
@@ -304,7 +334,11 @@ export const ProjectPage = () => {
         >
           <Flex h="calc(100vh - 350px)">
             {project?.tickets && (
-              <KanbanBoard tickets={project.tickets} projectid={project.id} />
+              <KanbanBoard
+                tickets={project.tickets}
+                projectid={project.id}
+                isLead={isLead}
+              />
             )}
           </Flex>
         </Tabs.Panel>
