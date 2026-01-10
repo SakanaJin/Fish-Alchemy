@@ -73,6 +73,7 @@ export interface GroupShallowDto {
   id: number;
   name: string;
   logo_path: string;
+  creatorid: number;
 }
 
 //project types ---------------------------------------------------------------------------------

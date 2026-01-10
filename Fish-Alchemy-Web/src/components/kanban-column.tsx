@@ -18,6 +18,7 @@ interface KanbanColumnProps {
   id: string;
   title: string;
   tickets: TicketShallowDto[];
+  isLead: boolean;
   onTicketUpdate: (updatedTicket: TicketShallowDto) => void;
   onTicketDelete: (toDelete: TicketShallowDto) => void;
 }
@@ -26,6 +27,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   id,
   title,
   tickets,
+  isLead,
   onTicketUpdate,
   onTicketDelete,
 }) => {
@@ -59,6 +61,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                   id={ticket.ticketnum}
                   ticket={ticket}
                   overlay={false}
+                  isLead={isLead}
                   onUpdate={(updatedTicket) => onTicketUpdate(updatedTicket)}
                   onDelete={(toDelete) => onTicketDelete(toDelete)}
                 />

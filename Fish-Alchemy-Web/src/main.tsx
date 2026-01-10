@@ -15,6 +15,7 @@ import { ImageUploadModal } from "./components/image-upload-modal.tsx";
 import { ProjectCreateModal } from "./components/project-create-modal.tsx";
 import { AddUserModal } from "./components/add-user-modal.tsx";
 import { GroupUpdateDeleteModal } from "./components/group-update-delete-modal.tsx";
+import { GroupCreateModal } from "./components/group-create-modal.tsx";
 
 const modals = {
   createticket: TicketCreateModalForm,
@@ -22,6 +23,7 @@ const modals = {
   updatedeleteproject: ProjectUpdateModal,
   createproject: ProjectCreateModal,
   updatedeletegroup: GroupUpdateDeleteModal,
+  creategroup: GroupCreateModal,
   adduser: AddUserModal,
   uploadimage: ImageUploadModal,
 };

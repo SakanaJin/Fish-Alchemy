@@ -27,6 +27,7 @@ class GroupShallowDto(BaseModel):
     id: int
     name: str
     logo_path: str
+    creatorid: int
 
 class Group(Base):
     __tablename__ = "groups"
@@ -54,5 +55,5 @@ class Group(Base):
         return groupgetdto
     
     def toShallowDto(self) -> GroupShallowDto:
-        groupdto = GroupShallowDto(id=self.id, name=self.name, logo_path=self.logo_path)
+        groupdto = GroupShallowDto(id=self.id, name=self.name, logo_path=self.logo_path, creatorid=self.creator.id)
         return groupdto

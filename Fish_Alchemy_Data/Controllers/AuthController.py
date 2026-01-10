@@ -58,28 +58,10 @@ def get_current_user_endpoint(user: User = Depends(get_current_user)):
     response.data = user.toGetDto()
     return response
 
-# @router.get("/get-current-user")
-# def get_current_user(request: Request, session_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
-#     response = Response()
-#     if not session_token:
-#         response.add_error("cookie", "not authenticated")
-#         raise HttpException(status_code=401, response=response)
-#     user_id = verify_session_token(session_token)
-#     if not user_id:
-#         response.add_error("cookie", "Invalid or expired token")
-#         raise HttpException(status_code=401, response=response)
-#     user = db.query(User).get(user_id)
-#     if not user:
-#         response.add_error("id", "user not found")
-#         raise HttpException(status_code=404, response=response)
-#     response.data = user.toGetDto()
-#     return response
-
 @router.post("/logout")
 def user_logout(fastres: FastRes):
     response = Response()
     fastres.delete_cookie(COOKIE_NAME)
-    # response.data={"message": "Logged out successfully"}
     response.data = True
     return response
 
@@ -99,6 +81,5 @@ def user_login(fastres: FastRes, logindto: LoginDto, db: Session = Depends(get_d
         samesite="lax",
         secure=False, # use true in prod https
     )
-    # response.data = {"message": "Logged in successfully"}
     response.data = True
     return response

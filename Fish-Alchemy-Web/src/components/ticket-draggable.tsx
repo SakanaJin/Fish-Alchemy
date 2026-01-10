@@ -28,6 +28,7 @@ export interface TicketDraggableProps {
   ticket: TicketShallowDto;
   id: UniqueIdentifier;
   overlay: boolean;
+  isLead: boolean;
   onUpdate?: (updatedTicket: TicketShallowDto) => void;
   onDelete?: (toDelete: TicketShallowDto) => void;
 }
@@ -38,6 +39,7 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
   ticket,
   id,
   overlay,
+  isLead,
   onUpdate,
   onDelete,
 }) => {
@@ -80,21 +82,23 @@ export const TicketDraggable: React.FC<TicketDraggableProps> = ({
             <HoverCard.Target>
               <Title
                 lineClamp={1}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: isLead ? "pointer" : "default" }}
                 onClick={() => {
-                  modals.openContextModal({
-                    modal: "updatedeleteticket",
-                    title: "Update Ticket",
-                    centered: true,
-                    innerProps: {
-                      onDelete: (toDelete: TicketShallowDto) =>
-                        onDelete ? onDelete(toDelete) : {},
-                      onSubmit: (updatedTicket: TicketShallowDto) =>
-                        onUpdate ? onUpdate(updatedTicket) : {},
+                  isLead
+                    ? modals.openContextModal({
+                        modal: "updatedeleteticket",
+                        title: "Update Ticket",
+                        centered: true,
+                        innerProps: {
+                          onDelete: (toDelete: TicketShallowDto) =>
+                            onDelete ? onDelete(toDelete) : {},
+                          onSubmit: (updatedTicket: TicketShallowDto) =>
+                            onUpdate ? onUpdate(updatedTicket) : {},
 
-                      ticket: ticket!,
-                    },
-                  });
+                          ticket: ticket!,
+                        },
+                      })
+                    : {};
                 }}
               >
                 {ticket?.name}

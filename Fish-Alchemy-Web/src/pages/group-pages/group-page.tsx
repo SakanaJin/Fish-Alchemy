@@ -72,11 +72,13 @@ export const GroupPage = () => {
     );
   }, [group, projectSearch]);
 
-  const addProject = (newProject: ProjectShallowDto) => {
+  const addProject = (newProject: ProjectGetDto) => {
     setGroup((group) => {
       if (!group) return undefined;
-      group.projects.push(newProject);
-      return group;
+      return {
+        ...group,
+        projects: [...group.projects, { ...newProject } as ProjectShallowDto],
+      };
     });
   };
 
@@ -120,7 +122,7 @@ export const GroupPage = () => {
 
   useEffect(() => {
     fetchGroup();
-  }, []);
+  }, [id]);
 
   return (
     <div style={{ marginLeft: sideMargin, marginRight: sideMargin }}>

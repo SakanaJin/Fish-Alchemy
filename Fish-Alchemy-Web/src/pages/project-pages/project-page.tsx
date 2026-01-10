@@ -80,8 +80,10 @@ export const ProjectPage = () => {
   const addNewTicket = (newTicket: TicketShallowDto) => {
     setProject((project) => {
       if (!project) return undefined;
-      project.tickets.push(newTicket);
-      return project;
+      return {
+        ...project,
+        tickets: [...project.tickets, { ...newTicket }],
+      };
     });
   };
 
@@ -197,7 +199,7 @@ export const ProjectPage = () => {
 
   useEffect(() => {
     fetchProject();
-  }, []);
+  }, [id]);
 
   return (
     <div

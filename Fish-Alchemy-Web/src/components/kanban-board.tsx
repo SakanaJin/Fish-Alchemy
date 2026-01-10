@@ -443,6 +443,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 key={column.id}
                 title={column.title}
                 tickets={column.tickets}
+                isLead={isLead}
                 onTicketUpdate={(updatedTicket) => updateTicket(updatedTicket)}
                 onTicketDelete={(toDelete) => deleteTicket(toDelete)}
               />
@@ -460,6 +461,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   .find((ticket) => ticket.ticketnum === activeId)!
               }
               overlay={true}
+              isLead={false}
             />
           ) : null}
         </DragOverlay>

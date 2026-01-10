@@ -46,7 +46,9 @@ export const GroupUpdateDeleteModal = ({
   };
 
   const handleDelete = async () => {
-    const response = await api.delete<ApiResponse<boolean>>(`/api/groups`);
+    const response = await api.delete<ApiResponse<boolean>>(
+      `/api/groups/${innerProps.group.id}`
+    );
 
     if (response.data.has_errors) {
       notifications.show({

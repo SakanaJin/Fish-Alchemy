@@ -120,16 +120,18 @@ def change_duedate(dto: TicketDateDto, id: int, db: Session = Depends(get_db), u
     return response
 
 @router.patch("/{ticketid}/user/{userid}")
-def assign_user(ticketid: int, userid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def assign_user(ticketid: int, userid: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
     response = Response()
     ticket = db.query(Ticket).filter(Ticket.id == ticketid).first()
     user = db.query(User).filter(User.id == userid).first()
+    if authedUser.id != ticket.project.lead.id:
+        response.add_error("auth", "only lead can assign user")
     if not ticket:
         response.add_error("id", "ticket not found")
     if not user:
         response.add_error("id", "user not found")
     if response.has_errors:
-        raise HttpException(status_code=404, response=response)
+        raise HttpException(status_code=400, response=response)
     ticket.user = user
     db.commit()
     response.data = ticket.toGetDto()

@@ -136,7 +136,7 @@ export const TicketUpdateDeleteModal = ({
     if (response.data.has_errors) {
       notifications.show({
         title: "Error",
-        message: "I'm actually really curious how this fucked up",
+        message: "Only lead can assign user.",
         color: "red",
       });
     }
