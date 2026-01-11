@@ -16,8 +16,10 @@ import { ProjectCreateModal } from "./components/project-create-modal.tsx";
 import { AddUserModal } from "./components/add-user-modal.tsx";
 import { GroupUpdateDeleteModal } from "./components/group-update-delete-modal.tsx";
 import { GroupCreateModal } from "./components/group-create-modal.tsx";
+import { ChangePassModal } from "./components/change-pass-modal.tsx";
 
 const modals = {
+  changepass: ChangePassModal,
   createticket: TicketCreateModalForm,
   updatedeleteticket: TicketUpdateDeleteModal,
   updatedeleteproject: ProjectUpdateModal,

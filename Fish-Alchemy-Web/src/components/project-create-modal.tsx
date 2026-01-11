@@ -1,5 +1,5 @@
 import { Button, Flex, Textarea, TextInput } from "@mantine/core";
-import { useForm } from "@mantine/form";
+import { useForm, type FormErrors } from "@mantine/form";
 import type { ContextModalProps } from "@mantine/modals";
 import {
   type ApiResponse,
@@ -33,11 +33,11 @@ export const ProjectCreateModal = ({
     );
 
     if (response.data.has_errors) {
-      notifications.show({
-        title: "Error",
-        message: "Error creating project",
-        color: "red",
-      });
+      const formerrors = response.data.errors.reduce((obj, err) => {
+        obj[err.property] = err.message;
+        return obj;
+      }, {} as FormErrors);
+      form.setErrors(formerrors);
     }
 
     if (response.data.data) {

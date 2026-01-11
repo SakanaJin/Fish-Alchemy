@@ -36,14 +36,11 @@ export const LoginPage = ({
       values
     );
     if (response.data.has_errors) {
-      const formErrors: FormErrors = response.data.errors.reduce(
-        (prev, curr) => {
-          Object.assign(prev, { [curr.property]: curr.message });
-          return prev;
-        },
-        {} as FormErrors
-      );
-      form.setErrors(formErrors);
+      const formerrors = response.data.errors.reduce((obj, err) => {
+        obj[err.property] = err.message;
+        return obj;
+      }, {} as FormErrors);
+      form.setErrors(formerrors);
     }
 
     if (response.data.data) {

@@ -4,7 +4,7 @@ import {
   type GroupGetDto,
   type GroupUpdateDto,
 } from "../constants/types";
-import { useForm } from "@mantine/form";
+import { useForm, type FormErrors } from "@mantine/form";
 import api from "../config/axios";
 import { notifications } from "@mantine/notifications";
 import { Button, Flex, Text, TextInput } from "@mantine/core";
@@ -31,11 +31,11 @@ export const GroupUpdateDeleteModal = ({
     );
 
     if (response.data.has_errors) {
-      notifications.show({
-        title: "Error",
-        message: "Error updating group",
-        color: "red",
-      });
+      const formerrors = response.data.errors.reduce((obj, err) => {
+        obj[err.property] = err.message;
+        return obj;
+      }, {} as FormErrors);
+      form.setErrors(formerrors);
     }
 
     if (response.data.data) {

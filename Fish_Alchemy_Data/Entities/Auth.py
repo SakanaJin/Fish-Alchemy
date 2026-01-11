@@ -1,8 +1,18 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
+from pydantic import BaseModel
+import bcrypt
 
 from Fish_Alchemy_Data.database import Base
 from Fish_Alchemy_Data.Common.Role import Role
+
+def create_password_hash(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+class ChangePassDto(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_new: str
 
 class UserAuth(Base):
     __tablename__ = "auth"

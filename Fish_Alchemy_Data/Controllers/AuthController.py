@@ -7,6 +7,7 @@ from typing import Optional
 
 from Fish_Alchemy_Data.database import get_db
 from Fish_Alchemy_Data.Entities.Users import User, LoginDto
+from Fish_Alchemy_Data.Entities.Auth import UserAuth, ChangePassDto, create_password_hash
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
 from Fish_Alchemy_Data.Common.Role import Role
 
@@ -58,6 +59,13 @@ def get_current_user_endpoint(user: User = Depends(get_current_user)):
     response.data = user.toGetDto()
     return response
 
+@router.get("/role")
+def get_role(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    response = Response()
+    role = db.query(UserAuth).filter(UserAuth.id == user.id).first().role
+    response.data = {"role": role}
+    return response
+
 @router.post("/logout")
 def user_logout(fastres: FastRes):
     response = Response()
@@ -70,7 +78,7 @@ def user_login(fastres: FastRes, logindto: LoginDto, db: Session = Depends(get_d
     response = Response()
     user = db.query(User).filter(User.username == logindto.username).first()
     if not user or not verify_password(logindto.password, user.auth.password_hash):
-        response.add_error("auth", "Username or password is incorrect")
+        response.add_error("password", "Username or password is incorrect")
         raise HttpException(status_code=401, response=response)
     token = create_session_token(user.id)
     fastres.set_cookie(
@@ -81,5 +89,20 @@ def user_login(fastres: FastRes, logindto: LoginDto, db: Session = Depends(get_d
         samesite="lax",
         secure=False, # use true in prod https
     )
+    response.data = True
+    return response
+
+@router.post("/password")
+def change_password(changepassdto: ChangePassDto, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    response = Response()
+    userAuth = db.query(UserAuth).filter(UserAuth.id == user.id).first()
+    if not verify_password(changepassdto.current_password, userAuth.password_hash):
+        response.add_error("current_password", "incorrect password")
+        raise HttpException(status_code=403, response=response)
+    if changepassdto.new_password != changepassdto.confirm_new:
+        response.add_error("confrim_new", "fields do not match")
+        raise HttpException(status_code=400, response=response)
+    userAuth.password_hash = create_password_hash(changepassdto.new_password)
+    db.commit()
     response.data = True
     return response

@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-import bcrypt
 import os
 import uuid
 
 from typing import Any
 
 from Fish_Alchemy_Data.Entities.Users import User, UserCreateDto, UserUpdateDto, DEFAULT_PFP, DEFAULT_BANNER
-from Fish_Alchemy_Data.Entities.Auth import UserAuth
+from Fish_Alchemy_Data.Entities.Auth import UserAuth, create_password_hash
 from Fish_Alchemy_Data.Controllers.AuthController import require_admin
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
 from Fish_Alchemy_Data.Common.Role import Role
@@ -19,11 +18,8 @@ BANNER_PATH = "/media/user/banner"
 
 router = APIRouter(prefix='/api/users', tags=["Users"])
 
-def create_password_hash(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
 @router.post("/")
-def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add back admin auth when finished
+def create_user(userdto: UserCreateDto, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     response = Response()
     if len(userdto.username) == 0:
         response.add_error("username", "Cannot be empty")
@@ -60,7 +56,7 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db)): # add ba
         raise HttpException(status_code=409, response=response)
     
 @router.patch("/{id}/username")
-def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_db)):
+def update_username(userdto: UserUpdateDto, id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     response = Response()
     user = db.query(User).filter(User.id == id).first()
     if not user:

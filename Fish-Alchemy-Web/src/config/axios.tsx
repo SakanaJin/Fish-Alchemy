@@ -1,7 +1,6 @@
 import { notifications } from "@mantine/notifications";
 import axios, { AxiosError } from "axios";
 import type { AxiosResponse } from "axios";
-import type { ApiResponse } from "../constants/types";
 import { EnvVars } from "./env-vars";
 import type { FileWithPath } from "@mantine/dropzone";
 
@@ -19,25 +18,27 @@ const errorHandlers: Record<number, ErrorHandler> = {
     console.log("Bad Request. Check your validation for possible errors");
     return Promise.resolve(response);
   },
-  "401": () => {
+  "401": (response) => {
     console.log("Unauthenticated. Make sure you are signed in.");
-    return Promise.resolve({
-      data: null,
-      has_errors: true,
-      errors: [
-        {
-          property: "",
-          message: "Sign in.",
-        },
-      ],
-    } as ApiResponse<any>);
+    // return Promise.resolve({
+    //   data: null,
+    //   has_errors: true,
+    //   errors: [
+    //     {
+    //       property: "",
+    //       message: "Sign in.",
+    //     },
+    //   ],
+    // } as ApiResponse<any>);
+    return Promise.resolve(response);
   },
-  "403": () => {
+  "403": (response) => {
     notifications.show({
       title: "Error",
       message: "You are not authorized to perform this action",
       color: "red",
     });
+    return Promise.resolve(response);
   },
   "404": (response) => {
     console.log(

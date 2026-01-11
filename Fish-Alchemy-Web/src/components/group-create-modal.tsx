@@ -1,4 +1,4 @@
-import { useForm } from "@mantine/form";
+import { useForm, type FormErrors } from "@mantine/form";
 import type { ContextModalProps } from "@mantine/modals";
 import {
   type ApiResponse,
@@ -6,7 +6,6 @@ import {
   type GroupCreateDto,
 } from "../constants/types";
 import api from "../config/axios";
-import { notifications } from "@mantine/notifications";
 import { Button, Flex, TextInput } from "@mantine/core";
 
 export const GroupCreateModal = ({
@@ -27,11 +26,11 @@ export const GroupCreateModal = ({
     );
 
     if (response.data.has_errors) {
-      notifications.show({
-        title: "Error",
-        message: "Error creating group",
-        color: "red",
-      });
+      const formerrors = response.data.errors.reduce((obj, err) => {
+        obj[err.property] = err.message;
+        return obj;
+      }, {} as FormErrors);
+      form.setErrors(formerrors);
     }
 
     if (response.data.data) {
