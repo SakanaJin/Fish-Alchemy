@@ -48,7 +48,6 @@ export const ChangePassModal = ({
         message: "Password changed successfully.",
         color: "green",
       });
-      form.reset();
       context.closeModal(id);
     }
   };

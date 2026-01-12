@@ -3,6 +3,7 @@ import { EnvVars } from "../../config/env-vars";
 import { useEffect, useMemo, useState } from "react";
 import type {
   ApiResponse,
+  GraphShallowDto,
   ProjectGetDto,
   TicketShallowDto,
 } from "../../constants/types";
@@ -24,6 +25,7 @@ import {
   Menu,
   Space,
   SimpleGrid,
+  Paper,
 } from "@mantine/core";
 import { routes } from "../../routes/RouteIndex";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -59,6 +61,7 @@ export const ProjectPage = () => {
   const [project, setProject] = useState<ProjectGetDto>();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [graphSearch, setGraphSearch] = useState("");
   const [ascending, setAscending] = useState(true);
   const user = useUser();
   const isLead = useMemo(() => {
@@ -76,6 +79,22 @@ export const ProjectPage = () => {
         : ticket.name.toString().toLowerCase().includes(search.toLowerCase());
     });
   }, [project, search]);
+  const filteredGraphs = useMemo(() => {
+    if (!search.trim()) return project?.graphs;
+    return project?.graphs.filter((graph) => {
+      graph.name.toLowerCase().includes(graphSearch.toLowerCase());
+    });
+  }, [project, graphSearch]);
+
+  const addNewGraph = (newGraph: GraphShallowDto) => {
+    setProject((project) => {
+      if (!project) return undefined;
+      return {
+        ...project,
+        graphs: [...project.graphs, { ...newGraph }],
+      };
+    });
+  };
 
   const addNewTicket = (newTicket: TicketShallowDto) => {
     setProject((project) => {
@@ -520,9 +539,62 @@ export const ProjectPage = () => {
           </SimpleGrid>
         </Tabs.Panel>
         <Tabs.Panel value="graphs">
-          <ScrollArea offsetScrollbars overscrollBehavior="contain">
-            Nothing here yet
-          </ScrollArea>
+          <Flex pt="sm" align="center">
+            <TextInput
+              placeholder="search"
+              onChange={(event) => {
+                setGraphSearch(event.currentTarget.value);
+              }}
+              leftSection={<FontAwesomeIcon icon={faSearch} />}
+              style={{ flexGrow: 1 }}
+            />
+            <ActionIcon.Group pl="sm">
+              <ActionIcon
+                variant="default"
+                h="36px"
+                w="36px"
+                onClick={() => {
+                  modals.openContextModal({
+                    modal: "creategraph",
+                    title: "Create Graph",
+                    centered: true,
+                    innerProps: {
+                      projectid: project?.id!,
+                      onSubmit: (newGraph) => addNewGraph(newGraph),
+                    },
+                  });
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </ActionIcon>
+            </ActionIcon.Group>
+          </Flex>
+          {filteredGraphs?.map((graph) => {
+            return (
+              <>
+                <Space h="sm" />{" "}
+                <Paper
+                  withBorder
+                  shadow="sm"
+                  p="xl"
+                  onClick={() => {
+                    navigate(routes.graphPage.replace(":id", `${graph.id}`));
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Title style={{ paddingLeft: "20px" }}>{graph.name}</Title>
+                  </div>
+                </Paper>
+              </>
+            );
+          })}
         </Tabs.Panel>
       </Tabs>
     </div>

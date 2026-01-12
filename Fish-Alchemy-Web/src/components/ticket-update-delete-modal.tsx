@@ -24,6 +24,7 @@ export const TicketUpdateDeleteModal = ({
 }>) => {
   const [date, setDate] = useState<string | null>(innerProps.ticket.duedate);
   const [users, setUsers] = useState<UserShallowDto[]>();
+  const [dirty, setDirty] = useState(false);
   const form = useForm({
     initialValues: {
       name: innerProps.ticket.name,
@@ -56,7 +57,6 @@ export const TicketUpdateDeleteModal = ({
         projectid: response.data.data.project.id,
         projectname: response.data.data.project.name,
       });
-      form.reset();
       context.closeModal(id);
     }
   };
@@ -76,7 +76,6 @@ export const TicketUpdateDeleteModal = ({
 
     if (response.data.data) {
       innerProps.onDelete(innerProps.ticket);
-      form.reset();
       context.closeAll();
     }
   };
@@ -174,13 +173,21 @@ export const TicketUpdateDeleteModal = ({
       />
       <DateTimePicker
         valueFormat="YYYY-MM-DDTHH:mm:ss"
-        value={date}
         pt="md"
         label="Due Date"
         clearable
         defaultValue={innerProps.ticket.duedate}
-        onChange={(d) => setDate(d)}
-        onDropdownClose={() => handleDuedateChange(date)}
+        value={date}
+        onChange={(d) => {
+          setDate(d);
+          setDirty(true);
+        }}
+        onDropdownClose={() => {
+          if (dirty) {
+            handleDuedateChange(date);
+            setDirty(false);
+          }
+        }}
       />
       <Select
         pt="md"

@@ -57,7 +57,7 @@ def update(projectdto: ProjectUpdateDto, projectid: int, db: Session = Depends(g
         raise HttpException(status_code=400, response=response)
     project.name = projectdto.name    
     project.description = projectdto.description
-    project.discord_webhook_url = project.discord_webhook_url
+    project.discord_webhook_url = projectdto.discord_webhook_url
     project.github_url = projectdto.github_url
     db.commit()
     response.data = project.toGetDto()

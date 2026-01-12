@@ -29,6 +29,8 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db), admin: Us
         response.add_error("email", "Cannot be empty")
     if len(userdto.password) == 0:
         response.add_error("password","Cannot be empty")
+    if userdto.password != userdto.confirm_password:
+        response.add_error("confirm_password", "password fields do not match")
     if response.has_errors:
         raise HttpException(status_code=400, response=response)
     user = User(username=userdto.username)
@@ -37,7 +39,7 @@ def create_user(userdto: UserCreateDto, db: Session = Depends(get_db), admin: Us
         db.flush()
     except IntegrityError:
         db.rollback()
-        response.add_error("username", "Username taken")
+        response.add_error("username", "Username already taken")
         raise HttpException(status_code=409, response=response)
     auth = UserAuth(
         id = user.id,

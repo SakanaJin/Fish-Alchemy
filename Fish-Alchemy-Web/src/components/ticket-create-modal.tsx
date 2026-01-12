@@ -45,7 +45,6 @@ export const TicketCreateModalForm = ({
         projectid: response.data.data.project.id,
         projectname: response.data.data.project.name,
       });
-      form.reset();
       context.closeModal(id);
     }
   };

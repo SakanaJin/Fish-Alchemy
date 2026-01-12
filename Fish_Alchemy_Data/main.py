@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from requests import HTTPError
 
 from Fish_Alchemy_Data.database import Base, engine, db_session, URIELPASS
 
@@ -41,7 +42,7 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "http://127.0.0.1:4173", "http://localhost:4173"],
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "http://127.0.0.1:4173", "http://localhost:4173", "https://discord.com", "https://media.discordapp.net"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +54,10 @@ def HttpExceptionHandler(request: Request, exception: HttpException):
         exception.response.model_dump(),
         status_code=exception.status_code
     )
+
+@app.exception_handler(HTTPError)
+def HttpErrorHandler(*args, **kwargs):
+    return
 
 def seed_Uriel():
     with db_session() as db:

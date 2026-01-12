@@ -5,4 +5,5 @@ export const routes = {
   user: `/user/:id`,
   groupPage: `/group/:id`,
   projectPage: `/project/:id`,
+  graphPage: `/graph/:id`,
 };

@@ -1,33 +1,36 @@
-import { Button, Flex, Textarea, TextInput } from "@mantine/core";
 import { useForm, type FormErrors } from "@mantine/form";
 import type { ContextModalProps } from "@mantine/modals";
 import {
+  type GraphGetDto,
   type ApiResponse,
-  type ProjectGetDto,
-  type ProjectCreateDto,
+  type GraphCreateDto,
 } from "../constants/types";
 import api from "../config/axios";
+import { Button, Flex, Textarea, TextInput } from "@mantine/core";
 
-export const ProjectCreateModal = ({
+export const GraphCreateModal = ({
   context,
   id,
   innerProps,
 }: ContextModalProps<{
-  groupid: number;
-  onSubmit: (newProject: ProjectGetDto) => void;
+  projectid: number;
+  onSubmit: (newGraph: GraphGetDto) => void;
 }>) => {
   const form = useForm({
     initialValues: {
       name: "",
       description: "",
-      github_url: "",
-      discord_webhook_url: "",
+    },
+    validate: {
+      name: (value) => {
+        return value.length === 0 ? "name cannot be empty" : null;
+      },
     },
   });
 
-  const handleSubmit = async (values: ProjectCreateDto) => {
-    const response = await api.post<ApiResponse<ProjectGetDto>>(
-      `/api/projects/groupid/${innerProps.groupid}`,
+  const handleSubmit = async (values: GraphCreateDto) => {
+    const response = await api.post<ApiResponse<GraphGetDto>>(
+      `/api/graphs/project/${innerProps.projectid}`,
       values
     );
 
@@ -48,31 +51,21 @@ export const ProjectCreateModal = ({
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <TextInput
+        key={form.key("name")}
         label="name"
-        autoFocus
-        withAsterisk
         {...form.getInputProps("name")}
       />
       <Textarea
-        label="description"
+        pt="sm"
         minRows={4}
         maxRows={4}
         autosize
-        pt="md"
+        key={form.key("name")}
+        label="description"
         {...form.getInputProps("description")}
       />
-      <TextInput
-        label="github url"
-        pt="md"
-        {...form.getInputProps("github_url")}
-      />
-      <TextInput
-        label="discord webhook"
-        pt="md"
-        {...form.getInputProps("discord_webhook_url")}
-      />
-      <Flex justify="space-between" pt="md">
-        <Button onClick={() => context.closeModal(id)} variant="outline">
+      <Flex justify="space-between" pt="sm">
+        <Button variant="outline" onClick={() => context.closeModal(id)}>
           Cancel
         </Button>
         <Button type="submit">Submit</Button>

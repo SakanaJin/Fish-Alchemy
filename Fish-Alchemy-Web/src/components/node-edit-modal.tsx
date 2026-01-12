@@ -2,26 +2,35 @@ import { useForm, type FormErrors } from "@mantine/form";
 import type { ContextModalProps } from "@mantine/modals";
 import {
   type ApiResponse,
-  type GroupGetDto,
-  type GroupCreateDto,
+  type NodeGetDto,
+  type NodeUpdateDto,
 } from "../constants/types";
 import api from "../config/axios";
 import { Button, Flex, TextInput } from "@mantine/core";
 
-export const GroupCreateModal = ({
-  context,
+export const NodeEditModal = ({
   id,
+  context,
   innerProps,
-}: ContextModalProps<{ onSubmit: (newGroup: GroupGetDto) => void }>) => {
+}: ContextModalProps<{
+  id: string;
+  name: string;
+  onSubmit: (updatedNode: NodeGetDto) => void;
+}>) => {
   const form = useForm({
     initialValues: {
-      name: "",
+      name: innerProps.name,
+    },
+    validate: {
+      name: (value) => {
+        return value.length === 0 ? "Name cannot be empty" : null;
+      },
     },
   });
 
-  const handleSubmit = async (values: GroupCreateDto) => {
-    const response = await api.post<ApiResponse<GroupGetDto>>(
-      `/api/groups`,
+  const handleSubmit = async (values: NodeUpdateDto) => {
+    const response = await api.patch<ApiResponse<NodeGetDto>>(
+      `/api/nodes/${innerProps.id}`,
       values
     );
 
@@ -42,13 +51,13 @@ export const GroupCreateModal = ({
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <TextInput
+        key={form.key("name")}
         label="name"
         autoFocus
-        withAsterisk
         {...form.getInputProps("name")}
       />
-      <Flex justify="space-between" pt="md">
-        <Button onClick={() => context.closeModal(id)} variant="outline">
+      <Flex pt="sm" justify="space-between">
+        <Button variant="outline" onClick={() => context.closeModal(id)}>
           Cancel
         </Button>
         <Button type="submit">Submit</Button>

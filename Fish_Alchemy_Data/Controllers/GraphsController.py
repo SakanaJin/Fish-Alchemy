@@ -5,6 +5,8 @@ from Fish_Alchemy_Data.Common.Response import Response, HttpException
 
 from Fish_Alchemy_Data.Entities.Graphs import Graph, GraphCreateDto, GraphUpdateDto
 from Fish_Alchemy_Data.Entities.Projects import Project
+from Fish_Alchemy_Data.Entities.Users import User
+from Fish_Alchemy_Data.Controllers.AuthController import get_current_user
 
 router = APIRouter(prefix="/api/graphs", tags=['Graphs'])
 
@@ -71,4 +73,14 @@ def delete(id: int, db: Session = Depends(get_db)):
     db.delete(graph)
     db.commit()
     response.data = True
+    return response
+
+@router.get("/{id}/auth")
+def does_user_have_auth(id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    response = Response()
+    graph = db.query(Graph).filter(Graph.id == id).first()
+    if not graph:
+        response.add_error("id", "cannot find graph")
+        raise HttpException(status_code=404, response=response)
+    response.data = graph.project.group in user.groups
     return response

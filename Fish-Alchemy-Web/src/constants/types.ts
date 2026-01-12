@@ -36,6 +36,7 @@ export interface UserCreateDto {
   username: string;
   email: string;
   password: string;
+  confirm_password: string;
 }
 
 export interface UserUpdateDto {
@@ -200,19 +201,16 @@ export interface GraphShallowDto {
 export interface NodeGetDto {
   id: number;
   name: string;
-  description: string;
   graph: GraphShallowDto;
   dependencies: NodeShallowDto[];
 }
 
 export interface NodeCreateDto {
   name: string;
-  description: string;
 }
 
 export interface NodeUpdateDto {
   name: string;
-  description: string;
 }
 
 export interface NodeShallowDto {

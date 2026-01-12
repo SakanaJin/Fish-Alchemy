@@ -4,6 +4,7 @@ from Fish_Alchemy_Data.database import get_db
 from Fish_Alchemy_Data.Common.Response import Response, HttpException
 
 from Fish_Alchemy_Data.Entities.Nodes import Node, NodeCreateDto, NodeUpdateDto
+from Fish_Alchemy_Data.Entities.NodeAssociation import NodeAssociation
 from Fish_Alchemy_Data.Entities.Graphs import Graph
 
 router = APIRouter(prefix="/api/nodes", tags=['Nodes'])
@@ -25,6 +26,16 @@ def get_by_id(id: int, db: Session = Depends(get_db)):
     response.data = node.toGetDto()
     return response
 
+@router.get("/graph/{id}")
+def get_by_graph(id: int, db: Session = Depends(get_db)):
+    response = Response()
+    graph = db.query(Graph).filter(Graph.id == id).first()
+    if not graph:
+        response.add_error("id", "graph not found")
+        raise HttpException(status_code=404, response=response)
+    response.data = [node.toGetDto() for node in graph.nodes]
+    return response
+
 @router.post("/graph/{graphid}")
 def create(nodedto: NodeCreateDto, graphid: int, db: Session = Depends(get_db)):
     response = Response()
@@ -37,7 +48,6 @@ def create(nodedto: NodeCreateDto, graphid: int, db: Session = Depends(get_db)):
         raise HttpException(status_code=400, response=response)
     node = Node(
         name=nodedto.name,
-        description=nodedto.description,
         graph=graph
     )
     db.add(node)
@@ -59,9 +69,22 @@ def connect_nodes(dependentid: int, dependencyid: int, db: Session = Depends(get
     if dependent.id == dependency.id:
         response.add_error("id", "cannot connect node to itself")
         raise HttpException(status_code=400, response=response)
-    dependent.dependencies.append(dependency)
+    edge = NodeAssociation(dependent=dependent, dependency=dependency)
+    db.add(edge)
     db.commit()
-    response.data = dependent.toGetDto()
+    response.data = True
+    return response
+
+@router.delete("/dependent/{dependentid}/dependency/{dependencyid}")
+def disconnect_nodes(dependentid: int, dependencyid: int, db: Session = Depends(get_db)):
+    response = Response()
+    connection = db.query(NodeAssociation).filter(NodeAssociation.dependency_id == dependencyid and NodeAssociation.dependent_id == dependentid).first()
+    if not connection:
+        response.add_error("edge", "nodes not connected")
+        raise HttpException(status_code=400, response=response)
+    db.delete(connection)
+    db.commit()
+    response.data = True
     return response
 
 @router.patch("/{id}")
@@ -75,7 +98,6 @@ def update(nodedto: NodeUpdateDto, id: int, db: Session = Depends(get_db)):
         response.add_error("name", "name cannot be empty")
         raise HttpException(status_code=400, response=response)
     node.name = nodedto.name
-    node.description = nodedto.description
     db.commit()
     response.data = node.toGetDto()
     return response

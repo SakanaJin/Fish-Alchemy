@@ -11,6 +11,7 @@ class UserCreateDto(BaseModel):
     username: str
     email: str
     password: str
+    confirm_password: str
 
 class UserUpdateDto(BaseModel):
     username: str

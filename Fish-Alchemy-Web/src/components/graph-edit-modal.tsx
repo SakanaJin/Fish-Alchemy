@@ -1,32 +1,40 @@
 import { modals, type ContextModalProps } from "@mantine/modals";
 import {
   type ApiResponse,
-  type GroupGetDto,
-  type GroupUpdateDto,
+  type GraphGetDto,
+  type GraphUpdateDto,
 } from "../constants/types";
 import { useForm, type FormErrors } from "@mantine/form";
 import api from "../config/axios";
+import { Button, Flex, Space, Text, Textarea, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Button, Flex, Text, TextInput } from "@mantine/core";
 
-export const GroupUpdateDeleteModal = ({
+export const GraphEditModal = ({
   context,
   id,
   innerProps,
 }: ContextModalProps<{
-  group: GroupGetDto;
-  onSubmit: (updatedGroup: GroupGetDto) => void;
+  graph: GraphGetDto;
+  onSubmit: (updatedGraph: GraphGetDto) => void;
   onDelete: () => void;
 }>) => {
   const form = useForm({
     initialValues: {
-      name: innerProps.group.name,
+      name: innerProps.graph.name,
+      description: innerProps.graph.description
+        ? innerProps.graph.description
+        : "",
+    },
+    validate: {
+      name: (value) => {
+        return value.length === 0 ? "name cannot be empty" : null;
+      },
     },
   });
 
-  const handleSubmit = async (values: GroupUpdateDto) => {
-    const response = await api.patch<ApiResponse<GroupGetDto>>(
-      `/api/groups/${innerProps.group.id}/name`,
+  const handleSubmit = async (values: GraphUpdateDto) => {
+    const response = await api.patch<ApiResponse<GraphGetDto>>(
+      `/api/graphs/${innerProps.graph.id}`,
       values
     );
 
@@ -46,13 +54,13 @@ export const GroupUpdateDeleteModal = ({
 
   const handleDelete = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/groups/${innerProps.group.id}`
+      `/api/graphs/${innerProps.graph.id}`
     );
 
     if (response.data.has_errors) {
       notifications.show({
         title: "Error",
-        message: "Error deleting group",
+        message: "Error deleting graph",
         color: "red",
       });
     }
@@ -66,28 +74,36 @@ export const GroupUpdateDeleteModal = ({
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <TextInput
+        key={form.key("name")}
         label="name"
-        autoFocus
-        withAsterisk
         {...form.getInputProps("name")}
       />
-      <Flex justify="space-between" pt="md">
-        <Button onClick={() => context.closeModal(id)} variant="outline">
+      <Textarea
+        pt="sm"
+        minRows={4}
+        maxRows={4}
+        autosize
+        key={form.key("name")}
+        label="description"
+        {...form.getInputProps("description")}
+      />
+      <Flex justify="space-between" pt="sm">
+        <Button variant="outline" onClick={() => context.closeModal(id)}>
           Cancel
         </Button>
         <Button type="submit">Submit</Button>
       </Flex>
+      <Space h="sm" />
       <Button
         color="red"
-        style={{ marginTop: "10px" }}
         onClick={() => {
           modals.openConfirmModal({
             title: "Confirm Delete",
             centered: true,
             children: (
               <Text>
-                Are you sure you want to delete the group{" "}
-                {innerProps.group.name}?
+                Are you sure you want to delete the project{" "}
+                {innerProps.graph.name}?
               </Text>
             ),
             labels: { confirm: "Confirm", cancel: "Cancel" },

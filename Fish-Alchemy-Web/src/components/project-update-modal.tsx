@@ -50,7 +50,6 @@ export const ProjectUpdateModal = ({
 
     if (response.data.data) {
       innerProps.onSubmit(response.data.data);
-      form.reset();
       context.closeModal(id);
     }
   };
@@ -70,7 +69,6 @@ export const ProjectUpdateModal = ({
 
     if (response.data.data) {
       innerProps.onDelete();
-      form.reset();
       context.closeAll();
     }
   };
@@ -110,7 +108,6 @@ export const ProjectUpdateModal = ({
 
     if (response.data.data) {
       innerProps.onSubmit(response.data.data);
-      form.reset();
       context.closeModal(id);
     }
   };
@@ -151,7 +148,7 @@ export const ProjectUpdateModal = ({
         allowDeselect={false}
         label="Assign User"
         data={users?.flatMap((user) => user.username)}
-        defaultValue={innerProps.project.lead.username}
+        value={innerProps.project.lead.username}
         onChange={(value) => handleUserSelect(value)}
       />
       <Flex justify="space-between" pt="md">
