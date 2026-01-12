@@ -59,14 +59,16 @@ def create(ticketdto: TicketCreateDto, projectid: int, db: Session = Depends(get
     db.add(ticket)
     db.commit()
     response.data = ticket.toGetDto()
-    payload = Payload(
-        username=project.name,
-        title=f'[#{ticket.ticketnum}] {ticket.name}',
-        description="Ticket created",
-        color=0x14c744
-    )
-    send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
-    return response
+    try:
+        payload = Payload(
+            username=project.name,
+            title=f'[#{ticket.ticketnum}] {ticket.name}',
+            description="Ticket created",
+            color=0x14c744
+        )
+        send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
+    finally:
+        return response
 
 @router.patch("/{id}")
 def update(ticketdto: TicketUpdateDto, id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -104,14 +106,16 @@ def change_state(dto: TicketStateDto, id: int, db: Session = Depends(get_db), us
     ticket.state = dto.state
     db.commit()
     response.data = ticket.toGetDto()
-    payload = Payload(
-        username=ticket.project.name,
-        title=f'[#{ticket.ticketnum}] {ticket.name}', 
-        description=f'Changed state to "{state_strings[ticket.state.name]}"',
-        color=0x068067,
-    )
-    send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
-    return response
+    try: 
+        payload = Payload(
+            username=ticket.project.name,
+            title=f'[#{ticket.ticketnum}] {ticket.name}', 
+            description=f'Changed state to "{state_strings[ticket.state.name]}"',
+            color=0x068067,
+        )
+        send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
+    finally: 
+        return response
 
 @router.patch("/{id}/duedate")
 def change_duedate(dto: TicketDateDto, id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -134,14 +138,16 @@ def change_duedate(dto: TicketDateDto, id: int, db: Session = Depends(get_db), u
     ticket.duedate = date
     db.commit()
     response.data = ticket.toGetDto()
-    payload = Payload(
-        username=ticket.project.name,
-        title=f'[#{ticket.ticketnum}] {ticket.name}',
-        description=f'Changed duedate to {ticket.duedate}',
-        color=0x7217e8
-    )
-    send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
-    return response
+    try:
+        payload = Payload(
+            username=ticket.project.name,
+            title=f'[#{ticket.ticketnum}] {ticket.name}',
+            description=f'Changed duedate to {ticket.duedate}',
+            color=0x7217e8
+        )
+        send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
+    finally:
+        return response
 
 @router.patch("/{ticketid}/user/{userid}")
 def assign_user(ticketid: int, userid: int, db: Session = Depends(get_db), authedUser: User = Depends(get_current_user)):
@@ -159,14 +165,16 @@ def assign_user(ticketid: int, userid: int, db: Session = Depends(get_db), authe
     ticket.user = user
     db.commit()
     response.data = ticket.toGetDto()
-    payload = Payload(
-        username=ticket.project.name,
-        title=f'[#{ticket.ticketnum}] {ticket.name}',
-        description=f'Ticket assigned to {ticket.user.username}',
-        color=0xfcb632
-    )
-    send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
-    return response
+    try:
+        payload = Payload(
+            username=ticket.project.name,
+            title=f'[#{ticket.ticketnum}] {ticket.name}',
+            description=f'Ticket assigned to {ticket.user.username}',
+            color=0xfcb632
+        )
+        send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
+    finally:
+        return response
 
 @router.delete("/{id}")
 def delete(id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -181,11 +189,13 @@ def delete(id: int, db: Session = Depends(get_db), user: User = Depends(get_curr
     db.delete(ticket)
     db.commit()
     response.data = True
-    payload = Payload(
-        username=ticket.project.name,
-        title=f'[#{ticket.ticketnum}] {ticket.name}',
-        description="Ticket deleted",
-        color=0xF44336
-    )
-    send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
-    return response
+    try:
+        payload = Payload(
+            username=ticket.project.name,
+            title=f'[#{ticket.ticketnum}] {ticket.name}',
+            description="Ticket deleted",
+            color=0xF44336
+        )
+        send_discord_message(ticket.project.discord_webhook_url, payload.to_json())
+    finally:
+        return response
