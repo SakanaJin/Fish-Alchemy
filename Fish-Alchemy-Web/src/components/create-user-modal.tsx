@@ -9,11 +9,7 @@ import api from "../config/axios";
 import { notifications } from "@mantine/notifications";
 import { Button, Flex, PasswordInput, TextInput } from "@mantine/core";
 
-export const UserCreateModal = ({
-  context,
-  id,
-  innerProps,
-}: ContextModalProps<{}>) => {
+export const UserCreateModal = ({ context, id }: ContextModalProps<{}>) => {
   const form = useForm({
     validateInputOnChange: ["confirm_password"],
     initialValues: {

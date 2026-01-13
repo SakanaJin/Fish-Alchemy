@@ -5,11 +5,7 @@ import api from "../config/axios";
 import { notifications } from "@mantine/notifications";
 import { Button, Flex, Select, Text } from "@mantine/core";
 
-export const UserDeleteModal = ({
-  context,
-  id,
-  innerProps,
-}: ContextModalProps<{}>) => {
+export const UserDeleteModal = ({ context, id }: ContextModalProps<{}>) => {
   const [users, setUsers] = useState<UserGetDto[]>();
   const usernames = useMemo(() => {
     return users?.flatMap((user) => user.username);

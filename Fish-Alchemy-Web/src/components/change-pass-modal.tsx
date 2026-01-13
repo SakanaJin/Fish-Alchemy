@@ -11,11 +11,7 @@ interface ChangePassDto {
   confirm_new: string;
 }
 
-export const ChangePassModal = ({
-  context,
-  id,
-  innerProps,
-}: ContextModalProps<{}>) => {
+export const ChangePassModal = ({ context, id }: ContextModalProps<{}>) => {
   const form = useForm({
     validateInputOnChange: ["confirm_new"],
     initialValues: {
