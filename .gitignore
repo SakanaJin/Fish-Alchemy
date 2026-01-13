@@ -3,6 +3,7 @@ docker-compose.yml
 nginx.conf
 Dockerfile.backend
 Dockerfile.frontend
+/nginx
 
 # image hosting 
 /media
