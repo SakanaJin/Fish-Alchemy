@@ -36,7 +36,7 @@ export const ProjectUpdateModal = ({
 
   const handleSubmit = async (values: ProjectUpdateDto) => {
     const response = await api.patch<ApiResponse<ProjectGetDto>>(
-      `/api/projects/${innerProps.project.id}`,
+      `/projects/${innerProps.project.id}`,
       values
     );
 
@@ -56,7 +56,7 @@ export const ProjectUpdateModal = ({
 
   const handleDelete = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/projects/${innerProps.project.id}`
+      `/projects/${innerProps.project.id}`
     );
 
     if (response.data.has_errors) {
@@ -75,7 +75,7 @@ export const ProjectUpdateModal = ({
 
   const fetchUsers = async () => {
     const response = await api.get<ApiResponse<UserShallowDto[]>>(
-      `/api/projects/${innerProps.project.id}/users`
+      `/projects/${innerProps.project.id}/users`
     );
 
     if (response.data.has_errors) {
@@ -93,7 +93,7 @@ export const ProjectUpdateModal = ({
 
   const handleUserSelect = async (username: string | null) => {
     const response = await api.patchnd<ApiResponse<ProjectGetDto>>(
-      `/api/projects/${innerProps.project.id}/user/${
+      `/projects/${innerProps.project.id}/user/${
         users?.find((user) => user.username === username)?.id
       }`
     );

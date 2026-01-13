@@ -24,7 +24,7 @@ export const AddUserModal = ({
 
   const handleUserSelect = async (username: string | null) => {
     const response = await api.post<ApiResponse<GroupGetDto>>(
-      `/api/groups/${innerProps.groupid}/user/${
+      `/groups/${innerProps.groupid}/user/${
         users?.find((user) => user.username === username)?.id
       }`
     );
@@ -44,7 +44,7 @@ export const AddUserModal = ({
   };
 
   const fetchUsers = async () => {
-    const response = await api.get<ApiResponse<UserGetDto[]>>(`/api/users`);
+    const response = await api.get<ApiResponse<UserGetDto[]>>(`/users`);
 
     if (response.data.has_errors) {
       notifications.show({

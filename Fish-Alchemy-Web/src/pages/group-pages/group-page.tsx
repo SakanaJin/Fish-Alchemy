@@ -84,7 +84,7 @@ export const GroupPage = () => {
 
   const removeUser = async (userid: number) => {
     const response = await api.delete<ApiResponse<GroupGetDto>>(
-      `/api/groups/${group?.id}/user/${userid}`
+      `/groups/${group?.id}/user/${userid}`
     );
 
     if (response.data.has_errors) {
@@ -101,9 +101,7 @@ export const GroupPage = () => {
   };
 
   const fetchGroup = async () => {
-    const response = await api.get<ApiResponse<GroupGetDto>>(
-      `/api/groups/${id}`
-    );
+    const response = await api.get<ApiResponse<GroupGetDto>>(`/groups/${id}`);
 
     if (response.data.has_errors) {
       notifications.show({
@@ -136,7 +134,7 @@ export const GroupPage = () => {
             onClick={() => {
               isOwner
                 ? openImageUploadModal<GroupGetDto>({
-                    apiurl: `/api/groups/${group?.id}/banner`,
+                    apiurl: `/groups/${group?.id}/banner`,
                     onUpload: (updatedGroup: GroupGetDto) =>
                       setGroup(updatedGroup),
                   })
@@ -174,7 +172,7 @@ export const GroupPage = () => {
               onClick={() => {
                 isOwner
                   ? openImageUploadModal<GroupGetDto>({
-                      apiurl: `/api/groups/${group?.id}/logo`,
+                      apiurl: `/groups/${group?.id}/logo`,
                       onUpload: (updatedGroup: GroupGetDto) =>
                         setGroup(updatedGroup),
                     })

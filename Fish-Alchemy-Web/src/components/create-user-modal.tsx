@@ -37,10 +37,7 @@ export const UserCreateModal = ({ context, id }: ContextModalProps<{}>) => {
   });
 
   const handleSubmit = async (values: UserCreateDto) => {
-    const response = await api.post<ApiResponse<UserGetDto>>(
-      `/api/users`,
-      values
-    );
+    const response = await api.post<ApiResponse<UserGetDto>>(`/users`, values);
 
     if (response.data.has_errors) {
       const formerrors = response.data.errors.reduce((obj, err) => {

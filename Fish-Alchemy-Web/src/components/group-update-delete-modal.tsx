@@ -26,7 +26,7 @@ export const GroupUpdateDeleteModal = ({
 
   const handleSubmit = async (values: GroupUpdateDto) => {
     const response = await api.patch<ApiResponse<GroupGetDto>>(
-      `/api/groups/${innerProps.group.id}/name`,
+      `/groups/${innerProps.group.id}/name`,
       values
     );
 
@@ -46,7 +46,7 @@ export const GroupUpdateDeleteModal = ({
 
   const handleDelete = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/groups/${innerProps.group.id}`
+      `/groups/${innerProps.group.id}`
     );
 
     if (response.data.has_errors) {

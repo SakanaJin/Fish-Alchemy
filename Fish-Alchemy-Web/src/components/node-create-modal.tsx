@@ -29,7 +29,7 @@ export const NodeCreateModal = ({
 
   const handleSubmit = async (values: NodeCreateDto) => {
     const response = await api.post<ApiResponse<NodeGetDto>>(
-      `/api/nodes/graph/${innerProps.graphid}`,
+      `/nodes/graph/${innerProps.graphid}`,
       values
     );
 

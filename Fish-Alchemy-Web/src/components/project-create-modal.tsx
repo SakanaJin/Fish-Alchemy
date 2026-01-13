@@ -27,7 +27,7 @@ export const ProjectCreateModal = ({
 
   const handleSubmit = async (values: ProjectCreateDto) => {
     const response = await api.post<ApiResponse<ProjectGetDto>>(
-      `/api/projects/groupid/${innerProps.groupid}`,
+      `/projects/groupid/${innerProps.groupid}`,
       values
     );
 

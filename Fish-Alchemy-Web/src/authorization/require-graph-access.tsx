@@ -16,7 +16,7 @@ export const RequireGraphAccess = () => {
       return;
     }
     api
-      .get<ApiResponse<boolean>>(`/api/graphs/${graphid}/auth`)
+      .get<ApiResponse<boolean>>(`/graphs/${graphid}/auth`)
       .then((response) => {
         if (response.data.has_errors || !response.data.data) {
           setAllowed(false);

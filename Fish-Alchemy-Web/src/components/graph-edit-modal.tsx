@@ -34,7 +34,7 @@ export const GraphEditModal = ({
 
   const handleSubmit = async (values: GraphUpdateDto) => {
     const response = await api.patch<ApiResponse<GraphGetDto>>(
-      `/api/graphs/${innerProps.graph.id}`,
+      `/graphs/${innerProps.graph.id}`,
       values
     );
 
@@ -54,7 +54,7 @@ export const GraphEditModal = ({
 
   const handleDelete = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/graphs/${innerProps.graph.id}`
+      `/graphs/${innerProps.graph.id}`
     );
 
     if (response.data.has_errors) {

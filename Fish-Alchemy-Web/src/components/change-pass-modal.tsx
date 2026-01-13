@@ -26,7 +26,7 @@ export const ChangePassModal = ({ context, id }: ContextModalProps<{}>) => {
 
   const handleSubmit = async (values: ChangePassDto) => {
     const response = await api.post<ApiResponse<boolean>>(
-      `/api/auth/password`,
+      `/auth/password`,
       values
     );
 

@@ -21,7 +21,7 @@ export const GroupCreateModal = ({
 
   const handleSubmit = async (values: GroupCreateDto) => {
     const response = await api.post<ApiResponse<GroupGetDto>>(
-      `/api/groups`,
+      `/groups`,
       values
     );
 

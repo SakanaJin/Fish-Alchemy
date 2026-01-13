@@ -39,9 +39,7 @@ export const AuthProvider = (props: any) => {
   const fetchCurrentUser = useAsyncRetry(async () => {
     setErrors([]);
 
-    const response = await api.get<GetUserResponse>(
-      `/api/auth/get-current-user`
-    );
+    const response = await api.get<GetUserResponse>(`/auth/get-current-user`);
 
     if (response.data.has_errors) {
       response.data.errors.forEach((err) => {
@@ -57,7 +55,7 @@ export const AuthProvider = (props: any) => {
   }, []);
 
   const fetchRole = async () => {
-    const response = await api.get<ApiResponse<RoleDto>>(`/api/auth/role`);
+    const response = await api.get<ApiResponse<RoleDto>>(`/auth/role`);
 
     if (response.data.has_errors) {
       notifications.show({
@@ -75,7 +73,7 @@ export const AuthProvider = (props: any) => {
   const [, logoutUser] = useAsyncFn(async () => {
     setErrors([]);
 
-    const response = await api.post(`/api/auth/logout`);
+    const response = await api.post(`/auth/logout`);
 
     if (response.status !== StatusCodes.OK) {
       console.log(`Error on logout: ${response.statusText}`);

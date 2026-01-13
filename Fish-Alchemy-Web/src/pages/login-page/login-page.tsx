@@ -32,7 +32,7 @@ export const LoginPage = ({
 
   const submitLogin = async (values: LoginDto) => {
     const response = await api.post<ApiResponse<boolean>>(
-      `/api/auth/login`,
+      `/auth/login`,
       values
     );
     if (response.data.has_errors) {

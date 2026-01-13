@@ -134,7 +134,7 @@ export const GraphPage = () => {
   };
 
   const removeNode = async (id: string) => {
-    const response = await api.delete<ApiResponse<boolean>>(`/api/nodes/${id}`);
+    const response = await api.delete<ApiResponse<boolean>>(`/nodes/${id}`);
 
     if (response.data.has_errors) {
       notifications.show({
@@ -147,7 +147,7 @@ export const GraphPage = () => {
 
   const Edging = async (dependencyid: string, dependentid: string) => {
     const response = await api.post<ApiResponse<boolean>>(
-      `/api/nodes/dependent/${dependentid}/dependency/${dependencyid}`
+      `/nodes/dependent/${dependentid}/dependency/${dependencyid}`
     );
 
     if (response.data.has_errors) {
@@ -161,7 +161,7 @@ export const GraphPage = () => {
 
   const removeEdge = async (edge: Edge) => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/nodes/dependent/${edge.target}/dependency/${edge.source}`
+      `/nodes/dependent/${edge.target}/dependency/${edge.source}`
     );
 
     if (response.data.has_errors) {
@@ -174,9 +174,7 @@ export const GraphPage = () => {
   };
 
   const fetchGraph = async () => {
-    const response = await api.get<ApiResponse<GraphGetDto>>(
-      `/api/graphs/${id}`
-    );
+    const response = await api.get<ApiResponse<GraphGetDto>>(`/graphs/${id}`);
 
     if (response.data.has_errors) {
       notifications.show({
@@ -193,7 +191,7 @@ export const GraphPage = () => {
 
   const fetchNodes = async () => {
     const response = await api.get<ApiResponse<NodeGetDto[]>>(
-      `/api/nodes/graph/${id}`
+      `/nodes/graph/${id}`
     );
 
     if (response.data.has_errors) {

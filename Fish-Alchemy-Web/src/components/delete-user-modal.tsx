@@ -14,9 +14,7 @@ export const UserDeleteModal = ({ context, id }: ContextModalProps<{}>) => {
 
   const handleSubmit = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/users/${
-        users?.find((user) => user.username === selectedUsername)?.id
-      }`
+      `/users/${users?.find((user) => user.username === selectedUsername)?.id}`
     );
 
     if (response.data.has_errors) {
@@ -38,7 +36,7 @@ export const UserDeleteModal = ({ context, id }: ContextModalProps<{}>) => {
   };
 
   const fetchUsers = async () => {
-    const response = await api.get<ApiResponse<UserGetDto[]>>(`/api/users`);
+    const response = await api.get<ApiResponse<UserGetDto[]>>(`/users`);
 
     if (response.data.has_errors) {
       notifications.show({

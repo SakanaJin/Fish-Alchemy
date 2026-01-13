@@ -199,7 +199,7 @@ export const ProjectPage = () => {
 
   const fetchProject = async () => {
     const response = await api.get<ApiResponse<ProjectGetDto>>(
-      `/api/projects/${id}`
+      `/projects/${id}`
     );
 
     if (response.data.has_errors) {
@@ -237,7 +237,7 @@ export const ProjectPage = () => {
               onClick={() => {
                 isLead
                   ? openImageUploadModal<ProjectGetDto>({
-                      apiurl: `/api/projects/${project?.id}/logo`,
+                      apiurl: `/projects/${project?.id}/logo`,
                       onUpload: (updatedProject: ProjectGetDto) =>
                         setProject(updatedProject),
                     })

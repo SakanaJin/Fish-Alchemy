@@ -219,7 +219,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     state: TicketState
   ) => {
     const response = await api.patch<ApiResponse<TicketGetDto>>(
-      `/api/tickets/${ticket.id}/state`,
+      `/tickets/${ticket.id}/state`,
       { state: state }
     );
 

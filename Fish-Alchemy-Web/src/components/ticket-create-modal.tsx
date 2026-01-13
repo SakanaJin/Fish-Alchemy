@@ -27,7 +27,7 @@ export const TicketCreateModalForm = ({
 
   const handleSubmit = async (values: TicketCreateDto) => {
     const response = await api.post<ApiResponse<TicketGetDto>>(
-      `/api/tickets/project/${innerProps.projectid}`,
+      `/tickets/project/${innerProps.projectid}`,
       values
     );
 

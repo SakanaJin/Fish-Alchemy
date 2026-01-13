@@ -156,7 +156,7 @@ export const UserPage = () => {
   };
 
   const fetchUser = async () => {
-    const response = await api.get<ApiResponse<UserGetDto>>(`/api/users/${id}`);
+    const response = await api.get<ApiResponse<UserGetDto>>(`/users/${id}`);
 
     if (response.data.has_errors) {
       notifications.show({
@@ -189,7 +189,7 @@ export const UserPage = () => {
             onClick={() => {
               isUser
                 ? openImageUploadModal<UserGetDto>({
-                    apiurl: `/api/users/${user?.id}/banner`,
+                    apiurl: `/users/${user?.id}/banner`,
                     onUpload: (updatedUser) => setUser(updatedUser),
                   })
                 : {};
@@ -226,7 +226,7 @@ export const UserPage = () => {
               onClick={() => {
                 isUser
                   ? openImageUploadModal<UserGetDto>({
-                      apiurl: `/api/users/${user?.id}/pfp`,
+                      apiurl: `/users/${user?.id}/pfp`,
                       onUpload: (updatedUser: UserGetDto) =>
                         setUser(updatedUser),
                     })

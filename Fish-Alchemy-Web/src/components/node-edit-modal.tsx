@@ -30,7 +30,7 @@ export const NodeEditModal = ({
 
   const handleSubmit = async (values: NodeUpdateDto) => {
     const response = await api.patch<ApiResponse<NodeGetDto>>(
-      `/api/nodes/${innerProps.id}`,
+      `/nodes/${innerProps.id}`,
       values
     );
 

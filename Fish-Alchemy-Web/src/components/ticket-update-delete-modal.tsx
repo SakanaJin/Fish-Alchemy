@@ -39,7 +39,7 @@ export const TicketUpdateDeleteModal = ({
 
   const handleSubmit = async (values: TicketUpdateDto) => {
     const response = await api.patch<ApiResponse<TicketGetDto>>(
-      `/api/tickets/${innerProps.ticket.id}`,
+      `/tickets/${innerProps.ticket.id}`,
       values
     );
 
@@ -63,7 +63,7 @@ export const TicketUpdateDeleteModal = ({
 
   const handleDelete = async () => {
     const response = await api.delete<ApiResponse<boolean>>(
-      `/api/tickets/${innerProps.ticket.id}`
+      `/tickets/${innerProps.ticket.id}`
     );
 
     if (response.data.has_errors) {
@@ -82,7 +82,7 @@ export const TicketUpdateDeleteModal = ({
 
   const handleDuedateChange = async (date: string | null) => {
     const response = await api.patch<ApiResponse<TicketGetDto>>(
-      `/api/tickets/${innerProps.ticket.id}/duedate`,
+      `/tickets/${innerProps.ticket.id}/duedate`,
       { date: date?.replace(" ", "T") }
     );
 
@@ -105,7 +105,7 @@ export const TicketUpdateDeleteModal = ({
 
   const fetchUsers = async () => {
     const response = await api.get<ApiResponse<UserShallowDto[]>>(
-      `/api/projects/${innerProps.ticket.projectid}/users`
+      `/projects/${innerProps.ticket.projectid}/users`
     );
 
     if (response.data.has_errors) {
@@ -124,7 +124,7 @@ export const TicketUpdateDeleteModal = ({
   const handleUserSelect = async (username: string | null) => {
     if (!username?.trim()) return;
     const response = await api.patchnd<ApiResponse<TicketGetDto>>(
-      `/api/tickets/${innerProps.ticket.id}/user/${
+      `/tickets/${innerProps.ticket.id}/user/${
         users?.find((user) => user.username === username)?.id
       }`
     );

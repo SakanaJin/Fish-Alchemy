@@ -18,7 +18,7 @@ export const RequireProjectAccess = () => {
       return;
     }
     api
-      .get<ApiResponse<ProjectGetDto>>(`/api/projects/${projectid}`)
+      .get<ApiResponse<ProjectGetDto>>(`/projects/${projectid}`)
       .then((response) => {
         if (response.data.has_errors || !response.data.data) {
           setAllowed(false);

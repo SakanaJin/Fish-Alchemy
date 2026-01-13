@@ -30,7 +30,7 @@ export const GraphCreateModal = ({
 
   const handleSubmit = async (values: GraphCreateDto) => {
     const response = await api.post<ApiResponse<GraphGetDto>>(
-      `/api/graphs/project/${innerProps.projectid}`,
+      `/graphs/project/${innerProps.projectid}`,
       values
     );
 
