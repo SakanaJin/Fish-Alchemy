@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from requests import HTTPError
 
 from Fish_Alchemy_Data.database import Base, engine, db_session, URIELPASS
@@ -48,6 +49,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SessionMiddleware, secret_key="supersecret", https_only=False)
 
 @app.exception_handler(HttpException)
 def HttpExceptionHandler(request: Request, exception: HttpException):
