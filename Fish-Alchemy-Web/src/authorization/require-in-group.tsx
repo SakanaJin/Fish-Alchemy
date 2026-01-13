@@ -9,6 +9,8 @@ export const RequireInGroup = () => {
   if (!Number.isInteger(groupid)) {
     return <Navigate to={routes.home} />;
   }
-  const isMember = user.groups.some((group) => group.id === groupid);
+  const isMember = user.groups.some(
+    (group) => group.id === groupid || group.creatorid === user.id
+  );
   return isMember ? <Outlet /> : <Navigate to={routes.home} />;
 };

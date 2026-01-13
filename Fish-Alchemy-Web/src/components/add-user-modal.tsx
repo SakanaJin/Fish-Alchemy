@@ -44,7 +44,7 @@ export const AddUserModal = ({
   };
 
   const fetchUsers = async () => {
-    const response = await api.get<ApiResponse<UserGetDto[]>>(`/users`);
+    const response = await api.get<ApiResponse<UserGetDto[]>>(`/users/`);
 
     if (response.data.has_errors) {
       notifications.show({

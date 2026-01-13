@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     seed_Uriel()
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 app.include_router(UsersController.router)
 app.include_router(AuthController.router)
