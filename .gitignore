@@ -1,3 +1,9 @@
+# docker and nginx
+docker-compose.yml
+nginx.conf
+Dockerfile.backend
+Dockerfile.frontend
+
 # image hosting 
 /media
 
